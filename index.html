@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kriptex — Криптовалютная биржа нового поколения</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0d14;--bg2:#111420;--bg3:#181c2e;--bg4:#1e2338;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#e8eaf6;--text2:#8b90b8;--text3:#555a7a;--green:#00d68f;--green2:rgba(0,214,143,0.12);--red:#ff4d6a;--red2:rgba(255,77,106,0.12);--accent:#5b6ef5;--accent2:#7c8ff7;--accent3:rgba(91,110,245,0.15);--gold:#f5c342;--gold2:rgba(245,195,66,0.12);--radius:12px;--radius2:8px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+  #authOverlay{position:fixed;inset:0;z-index:999;background:rgba(5,7,15,0.97);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+  .auth-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:40px 36px;width:420px;max-width:95vw;}
+  .auth-logo{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#fff;text-align:center;margin-bottom:6px;}
+  .auth-logo span{color:var(--accent2);}
+  .auth-tagline{text-align:center;font-size:13px;color:var(--text2);margin-bottom:28px;}
+  .auth-tabs{display:flex;background:var(--bg3);border-radius:var(--radius2);padding:4px;gap:4px;margin-bottom:24px;}
+  .auth-tab{flex:1;padding:8px;text-align:center;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;transition:.2s;color:var(--text2);border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+  .auth-tab.active{background:var(--accent);color:#fff;}
+  .auth-form{display:flex;flex-direction:column;gap:14px;}
+  .auth-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+  .auth-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s;}
+  .auth-input:focus{border-color:var(--accent);}
+  .auth-submit{width:100%;padding:13px;border-radius:var(--radius2);border:none;font-size:15px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;margin-top:4px;transition:.2s;letter-spacing:.3px;}
+  .auth-submit:hover{background:var(--accent2);}
+  .auth-error{font-size:12px;color:var(--red);background:var(--red2);border:1px solid rgba(255,77,106,.2);padding:9px 12px;border-radius:var(--radius2);display:none;}
+  .auth-divider{text-align:center;font-size:12px;color:var(--text3);margin:4px 0;}
+  .auth-bonus{background:var(--green2);border:1px solid rgba(0,214,143,.2);border-radius:var(--radius2);padding:10px 14px;font-size:12px;color:var(--green);text-align:center;margin-top:4px;}
+
+  nav{position:sticky;top:0;z-index:100;background:rgba(11,13,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:8px;height:60px;}
+  .logo{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.5px;margin-right:8px;}
+  .logo span{color:var(--accent2);}
+  .ticker-strip{flex:1;overflow:hidden;display:flex;align-items:center;}
+  .ticker-inner{display:flex;gap:24px;white-space:nowrap;animation:ticker 40s linear infinite;}
+  .ticker-item{font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text2);}
+  .ticker-item .sym{color:var(--text);font-weight:600;font-size:11px;font-family:'Space Mono',monospace;}
+  .ticker-item .ch.up{color:var(--green);}
+  .ticker-item .ch.dn{color:var(--red);}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .nav-right{display:flex;align-items:center;gap:12px;margin-left:16px;}
+  .btn-logout{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:7px 16px;border-radius:var(--radius2);font-size:13px;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;}
+  .btn-logout:hover{border-color:var(--red);color:var(--red);}
+  .user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 14px 5px 8px;}
+  .user-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent3);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent2);}
+  .user-name{font-size:13px;font-weight:500;color:var(--text);}
+  .notif-btn{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:16px;position:relative;}
+
+  .layout{display:flex;min-height:calc(100vh - 60px);}
+  sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;}
+  .nav-group-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;padding:12px 10px 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius2);cursor:pointer;color:var(--text2);font-size:13.5px;transition:.15s;border:1px solid transparent;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:var(--accent3);color:var(--accent2);border-color:rgba(91,110,245,0.3);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .nav-badge{margin-left:auto;background:var(--green2);color:var(--green);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;}
+  sidebar .bottom{margin-top:auto;}
+  .portfolio-mini{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:8px;}
+  .portfolio-mini .label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .portfolio-mini .amount{font-family:'Space Mono',monospace;font-size:16px;color:#fff;font-weight:700;}
+  .portfolio-mini .change{font-size:12px;color:var(--green);margin-top:2px;}
+
+  main{flex:1;overflow:auto;padding:24px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .page-title{font-size:22px;font-weight:600;}
+  .page-subtitle{font-size:13px;color:var(--text2);margin-top:3px;}
+  .search-bar{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:8px 14px;width:260px;}
+  .search-bar input{background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;flex:1;}
+  .search-bar input::placeholder{color:var(--text3);}
+
+  .promo-banner{background:linear-gradient(135deg,#1a2040,#0e1530);border:1px solid rgba(91,110,245,.3);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+  .promo-icon{font-size:28px;}
+  .promo-text strong{font-size:15px;color:#fff;display:block;margin-bottom:3px;}
+  .promo-text span{font-size:12px;color:var(--text2);}
+  .promo-badge{margin-left:auto;background:var(--green2);border:1px solid rgba(0,214,143,.3);color:var(--green);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:#fff;}
+  .stat-sub{font-size:12px;color:var(--text2);margin-top:4px;}
+  .stat-sub.up{color:var(--green);}
+  .stat-sub.dn{color:var(--red);}
+
+  .filter-tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;}
+  .ftab{padding:6px 14px;border-radius:var(--radius2);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;transition:.15s;font-family:'DM Sans',sans-serif;}
+  .ftab:hover{border-color:var(--border2);color:var(--text);}
+  .ftab.active{background:var(--accent3);border-color:rgba(91,110,245,0.4);color:var(--accent2);}
+
+  .coin-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .ct-header{display:grid;grid-template-columns:40px 2.5fr 1.5fr 1fr 1fr 1fr 120px;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .ct-header span{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+  .ct-header span:not(:first-child){text-align:right;}
+  .ct-row{display:grid;grid-template-columns:40px 2.5fr 1.5fr 1fr 1fr 1fr 120px;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;transition:.15s;cursor:pointer;}
+  .ct-row:last-child{border-bottom:none;}
+  .ct-row:hover{background:var(--bg3);}
+  .rank{font-size:12px;color:var(--text3);font-family:'Space Mono',monospace;}
+  .coin-info{display:flex;align-items:center;gap:10px;}
+  .coin-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Space Mono',monospace;flex-shrink:0;}
+  .coin-name{font-weight:500;font-size:14px;}
+  .coin-sym{font-size:11px;color:var(--text2);font-family:'Space Mono',monospace;margin-top:1px;}
+  .ct-val{text-align:right;font-family:'Space Mono',monospace;font-size:13px;}
+  .ct-val.price{font-weight:600;color:#fff;font-size:13.5px;}
+  .ct-val.green{color:var(--green);}
+  .ct-val.red{color:var(--red);}
+  .ct-val.muted{color:var(--text2);}
+  .trade-btn{margin-left:auto;background:var(--accent3);border:1px solid rgba(91,110,245,0.3);color:var(--accent2);padding:6px 14px;border-radius:var(--radius2);font-size:12px;cursor:pointer;transition:.15s;font-family:'DM Sans',sans-serif;font-weight:500;}
+  .trade-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .sparkline{height:36px;width:80px;display:block;margin-left:auto;}
+
+  .trade-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;}
+  .chart-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .chart-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .selected-coin{display:flex;align-items:center;gap:10px;}
+  .sel-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Space Mono',monospace;}
+  .sel-name{font-size:18px;font-weight:600;}
+  .sel-sym{font-size:12px;color:var(--text2);font-family:'Space Mono',monospace;}
+  .sel-price{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;}
+  .sel-change{font-size:13px;padding:3px 10px;border-radius:6px;font-weight:600;}
+  .sel-change.up{background:var(--green2);color:var(--green);}
+  .sel-change.dn{background:var(--red2);color:var(--red);}
+  .chart-intervals{display:flex;gap:4px;margin-left:auto;}
+  .ci{padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text2);transition:.15s;border:1px solid transparent;}
+  .ci:hover{color:var(--text);}
+  .ci.active{background:var(--accent3);color:var(--accent2);border-color:rgba(91,110,245,0.3);}
+  #mainChart{width:100%;height:420px;display:block;}
+
+  .order-panel{display:flex;flex-direction:column;gap:12px;}
+  .order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .order-tabs{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden;}
+  .otab{flex:1;padding:8px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;border:none;background:transparent;font-family:'DM Sans',sans-serif;color:var(--text2);}
+  .otab.buy.active{background:var(--green2);color:var(--green);}
+  .otab.sell.active{background:var(--red2);color:var(--red);}
+  .otab:hover{background:var(--bg3);}
+  .form-row{margin-bottom:12px;}
+  .form-label{font-size:11px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;}
+  .form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:10px 12px;color:var(--text);font-size:14px;font-family:'Space Mono',monospace;outline:none;transition:.15s;}
+  .form-input:focus{border-color:var(--accent);}
+  .input-wrapper{position:relative;}
+  .input-suffix{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text3);font-family:'Space Mono',monospace;}
+  .pct-row{display:flex;gap:4px;margin-bottom:12px;}
+  .pct-btn{flex:1;padding:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;cursor:pointer;text-align:center;transition:.15s;font-family:'DM Sans',sans-serif;}
+  .pct-btn:hover{border-color:var(--border2);color:var(--text);}
+  .submit-btn{width:100%;padding:12px;border-radius:var(--radius2);border:none;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;letter-spacing:.3px;}
+  .submit-btn.buy{background:var(--green);color:#0b0d14;}
+  .submit-btn.buy:hover{background:#00f0a0;}
+  .submit-btn.sell{background:var(--red);color:#fff;}
+  .submit-btn.sell:hover{filter:brightness(1.1);}
+  .bal-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:14px;}
+  .bal-row span{font-family:'Space Mono',monospace;color:var(--text);}
+
+  .orderbook-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .ob-header{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .ob-cols{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);letter-spacing:.8px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+  .ob-spread{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4px 0;}
+  .ob-spread strong{color:var(--text);}
+
+  .wallet-top{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:20px;}
+  .total-card{background:linear-gradient(135deg,#1a1f3a 0%,#0e1022 100%);border:1px solid var(--border);border-radius:var(--radius);padding:24px;position:relative;overflow:hidden;}
+  .total-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(91,110,245,0.15),transparent);}
+  .tc-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .tc-amount{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:#fff;}
+  .tc-sub{font-size:13px;color:var(--text2);margin-top:6px;}
+  .wallet-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+  .wa-btn{flex:1;min-width:80px;padding:9px;border-radius:var(--radius2);font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:.2s;font-family:'DM Sans',sans-serif;border:none;}
+  .wa-btn.deposit{background:var(--accent);color:#fff;}
+  .wa-btn.deposit:hover{background:var(--accent2);}
+  .wa-btn.withdraw{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+  .wa-btn.withdraw:hover{border-color:var(--accent);color:var(--accent2);}
+  .alloc-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .alloc-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .alloc-item{display:flex;align-items:center;gap:10px;}
+  .alloc-bar-wrap{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+  .alloc-bar{height:100%;border-radius:3px;}
+  .alloc-pct{font-size:12px;font-family:'Space Mono',monospace;color:var(--text2);min-width:40px;text-align:right;}
+  .holdings-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .ht-header{display:grid;grid-template-columns:2.5fr 1.5fr 1fr 1fr 1fr;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .ht-header span{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;}
+  .ht-header span:not(:first-child){text-align:right;}
+  .ht-row{display:grid;grid-template-columns:2.5fr 1.5fr 1fr 1fr 1fr;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;}
+  .ht-row:last-child{border-bottom:none;}
+  .ht-row:hover{background:var(--bg3);}
+  .ht-val{text-align:right;font-family:'Space Mono',monospace;font-size:13px;}
+  .empty-wallet{padding:40px;text-align:center;color:var(--text3);}
+  .empty-wallet .ew-icon{font-size:40px;margin-bottom:12px;}
+  .empty-wallet p{font-size:14px;margin-bottom:6px;color:var(--text2);}
+  .empty-wallet small{font-size:12px;}
+
+  .deposit-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .dep-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+  .dep-card h3{font-size:16px;margin-bottom:18px;font-weight:500;}
+  .method-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .method-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;cursor:pointer;transition:.15s;text-align:center;}
+  .method-card:hover{border-color:var(--border2);}
+  .method-card.selected{border-color:var(--accent);background:var(--accent3);}
+  .method-card .micon{font-size:24px;margin-bottom:6px;}
+  .method-card .mname{font-size:12px;font-weight:500;}
+  .method-card .msub{font-size:10px;color:var(--text3);margin-top:2px;}
+  .dep-address{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 14px;font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);word-break:break-all;margin:12px 0;}
+  .copy-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 18px;border-radius:var(--radius2);cursor:pointer;font-size:13px;transition:.15s;font-family:'DM Sans',sans-serif;}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent2);}
+  .qr-placeholder{width:140px;height:140px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);margin:12px auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+  .dep-steps{display:flex;flex-direction:column;gap:14px;}
+  .dep-step{display:flex;gap:14px;align-items:flex-start;}
+  .dep-step-num{width:26px;height:26px;border-radius:50%;background:var(--accent3);border:1px solid rgba(91,110,245,.4);color:var(--accent2);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .dep-step-text strong{display:block;font-size:14px;margin-bottom:2px;}
+  .dep-step-text p{font-size:12px;color:var(--text2);}
+  .history-table{width:100%;border-collapse:collapse;}
+  .history-table th{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+  .history-table td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);}
+  .history-table tr:last-child td{border-bottom:none;}
+  .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+  .badge.completed{background:var(--green2);color:var(--green);}
+  .badge.pending{background:var(--gold2);color:var(--gold);}
+  .badge.failed{background:var(--red2);color:var(--red);}
+  .dep-pending-box{background:var(--gold2);border:1px solid rgba(245,195,66,.3);border-radius:var(--radius2);padding:14px;margin-top:14px;font-size:13px;color:var(--gold);display:none;}
+
+  .about-hero{background:linear-gradient(135deg,#0e1530,#1a2040);border:1px solid rgba(91,110,245,.25);border-radius:var(--radius);padding:48px 40px;margin-bottom:24px;position:relative;overflow:hidden;}
+  .about-hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(91,110,245,.15);border:1px solid rgba(91,110,245,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--accent2);margin-bottom:20px;}
+  .about-hero h1{font-size:36px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:14px;}
+  .about-hero h1 span{color:var(--accent2);}
+  .about-hero p{font-size:15px;color:var(--text2);max-width:640px;line-height:1.7;}
+  .about-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .about-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;}
+  .about-stat .as-val{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:var(--accent2);margin-bottom:6px;}
+  .about-stat .as-label{font-size:12px;color:var(--text3);}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .about-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+  .about-card h3{font-size:16px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .about-card p{font-size:13px;color:var(--text2);line-height:1.7;}
+  .about-card ul{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .about-card ul li{font-size:13px;color:var(--text2);display:flex;align-items:flex-start;gap:8px;}
+  .about-card ul li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;}
+  .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+  .team-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;}
+  .team-avatar{width:72px;height:72px;border-radius:50%;background:var(--accent3);border:2px solid rgba(91,110,245,.3);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--accent2);margin:0 auto 14px;font-family:'Space Mono',monospace;}
+  .team-name{font-size:16px;font-weight:600;margin-bottom:4px;color:#fff;}
+  .team-role{font-size:12px;color:var(--accent2);margin-bottom:10px;}
+  .team-bio{font-size:12px;color:var(--text3);line-height:1.6;}
+  .license-banner{background:linear-gradient(135deg,#0a1f0a,#0e2a0e);border:1px solid rgba(0,214,143,.2);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+  .license-icon{font-size:36px;}
+  .license-text strong{display:block;font-size:15px;color:#fff;margin-bottom:4px;}
+  .license-text p{font-size:13px;color:var(--text2);}
+  .license-badge{margin-left:auto;background:var(--green2);border:1px solid rgba(0,214,143,.3);color:var(--green);padding:8px 16px;border-radius:var(--radius2);font-size:13px;font-weight:600;white-space:nowrap;}
+
+  .legal-doc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:32px;}
+  .legal-doc h2{font-size:20px;font-weight:600;margin-bottom:6px;}
+  .legal-doc .legal-meta{font-size:12px;color:var(--text3);margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;}
+  .legal-section{margin-bottom:24px;}
+  .legal-section h3{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--accent2);}
+  .legal-section p{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:8px;}
+  .legal-section ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .legal-section ul li{font-size:13px;color:var(--text2);padding-left:16px;position:relative;line-height:1.7;}
+  .legal-section ul li::before{content:'—';position:absolute;left:0;color:var(--text3);}
+  .legal-pending{background:var(--gold2);border:1px solid rgba(245,195,66,.25);border-radius:var(--radius2);padding:14px 18px;font-size:13px;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+  .doc-tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;}
+  .doc-tab{padding:7px 16px;border-radius:var(--radius2);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;transition:.15s;font-family:'DM Sans',sans-serif;}
+  .doc-tab:hover{border-color:var(--border2);color:var(--text);}
+  .doc-tab.active{background:var(--accent3);border-color:rgba(91,110,245,.4);color:var(--accent2);}
+
+  .kyc-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+  .kyc-steps-nav{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;height:fit-content;}
+  .kyc-step-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius2);margin-bottom:4px;cursor:pointer;transition:.15s;}
+  .kyc-step-item:hover{background:var(--bg3);}
+  .kyc-step-item.active{background:var(--accent3);}
+  .kyc-step-item.done{opacity:.7;}
+  .kyc-step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:1px solid var(--border2);color:var(--text2);}
+  .kyc-step-item.active .kyc-step-num{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .kyc-step-item.done .kyc-step-num{background:var(--green2);border-color:rgba(0,214,143,.4);color:var(--green);}
+  .kyc-step-label{font-size:13px;font-weight:500;}
+  .kyc-step-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+  .kyc-main-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+  .kyc-step-content{display:none;}
+  .kyc-step-content.active{display:block;}
+  .kyc-step-title{font-size:18px;font-weight:600;margin-bottom:6px;}
+  .kyc-step-desc{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;}
+  .kyc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .kyc-upload-box{border:2px dashed var(--border2);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:14px;}
+  .kyc-upload-box:hover{border-color:var(--accent);background:var(--accent3);}
+  .kyc-upload-icon{font-size:32px;margin-bottom:10px;}
+  .kyc-upload-text{font-size:14px;font-weight:500;margin-bottom:4px;}
+  .kyc-upload-sub{font-size:12px;color:var(--text3);}
+  .kyc-info-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;font-size:13px;color:var(--text2);line-height:1.7;}
+  .kyc-info-box strong{color:var(--text);display:block;margin-bottom:4px;}
+  .kyc-status-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .kyc-status-card h3{font-size:14px;font-weight:500;margin-bottom:14px;}
+  .kyc-level{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius2);background:var(--bg3);margin-bottom:8px;}
+  .kyc-level-icon{font-size:20px;}
+  .kyc-level-info{flex:1;}
+  .kyc-level-name{font-size:13px;font-weight:500;}
+  .kyc-level-limit{font-size:11px;color:var(--text3);}
+  .kyc-level-status{font-size:11px;padding:3px 8px;border-radius:6px;}
+  .kyc-level-status.done{background:var(--green2);color:var(--green);}
+  .kyc-level-status.pending{background:var(--gold2);color:var(--gold);}
+  .kyc-level-status.locked{background:var(--bg4);color:var(--text3);}
+
+  /* ADMIN */
+  #adminOverlay{position:fixed;inset:0;z-index:9998;background:rgba(3,5,10,0.98);display:none;align-items:center;justify-content:center;backdrop-filter:blur(16px);}
+  #adminOverlay.open{display:flex;}
+  .admin-nav-item{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#8b90b8;transition:.15s;display:flex;align-items:center;gap:8px;}
+  .admin-nav-item:hover{background:rgba(255,80,80,0.08);color:#fff;}
+  .admin-nav-item.active{background:rgba(255,80,80,0.12);color:#ff8080;border:1px solid rgba(255,80,80,0.2);}
+  .admin-section{display:none;}
+  .admin-section.active{display:block;}
+  .admin-section h3{font-size:15px;font-weight:600;margin-bottom:14px;color:#fff;}
+  .admin-card{background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .admin-input{width:100%;background:#0d1020;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#e8eaf6;font-size:13px;font-family:'Space Mono',monospace;outline:none;margin-bottom:8px;}
+  .admin-input:focus{border-color:#ff4d6a;}
+  .admin-btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s;}
+  .admin-btn.danger{background:rgba(255,77,106,.15);border:1px solid rgba(255,77,106,.3);color:#ff4d6a;}
+  .admin-btn.danger:hover{background:#ff4d6a;color:#fff;}
+  .admin-btn.success{background:rgba(0,214,143,.15);border:1px solid rgba(0,214,143,.3);color:#00d68f;}
+  .admin-btn.success:hover{background:#00d68f;color:#000;}
+  .admin-btn.primary{background:rgba(91,110,245,.15);border:1px solid rgba(91,110,245,.3);color:#7c8ff7;}
+  .admin-btn.primary:hover{background:#5b6ef5;color:#fff;}
+  .admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .admin-table th{text-align:left;padding:8px 10px;font-size:11px;color:#555a7a;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .admin-table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.04);color:#8b90b8;}
+  .admin-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .admin-stat{background:#0d1020;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;}
+  .admin-stat .val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:#ff4d6a;margin-bottom:3px;}
+  .admin-stat .lbl{font-size:11px;color:#555a7a;}
+  .addr-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .addr-label{font-size:12px;color:#555a7a;min-width:130px;font-family:'Space Mono',monospace;}
+  .addr-input{flex:1;background:#0d1020;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 10px;color:#e8eaf6;font-size:11px;font-family:'Space Mono',monospace;outline:none;}
+  .mm-slider{width:100%;accent-color:#ff4d6a;margin-bottom:6px;}
+
+  .toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius2);padding:12px 18px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;animation:slideIn .3s ease;box-shadow:0 4px 24px rgba(0,0,0,.4);}
+  .toast.success{border-color:rgba(0,214,143,.3);}
+  .toast .ti{font-size:16px;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes fadeOut{to{opacity:0;transform:translateX(20px)}}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
+
+  @media(max-width:900px){
+    sidebar{display:none;}
+    .trade-layout,.wallet-top,.deposit-layout,.about-grid,.kyc-layout{grid-template-columns:1fr;}
+    .stats-row,.about-stats{grid-template-columns:1fr 1fr;}
+    .team-grid{grid-template-columns:1fr 1fr;}
+    .admin-stat-row{grid-template-columns:1fr 1fr;}
+    .ct-header,.ct-row{grid-template-columns:30px 2fr 1.5fr 1fr 100px;}
+    .ct-header span:nth-child(5),.ct-row>*:nth-child(5),.ct-header span:nth-child(6),.ct-row>*:nth-child(6){display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<!-- AUTH MODAL -->
+<div id="authModal" style="display:none;position:fixed;inset:0;z-index:9990;background:rgba(3,5,15,0.92);backdrop-filter:blur(12px);align-items:center;justify-content:center;">
+  <div class="auth-box" style="position:relative">
+    <button onclick="closeAuthModal()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    <div class="auth-logo">Kripto<span>ex</span></div>
+    <div class="auth-tagline">Криптовалютная биржа нового поколения</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Войти</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <div id="loginForm" class="auth-form">
+      <div><div class="auth-label">Логин</div><input class="auth-input" type="text" id="loginUser" placeholder="Введите логин"></div>
+      <div><div class="auth-label">Пароль</div><input class="auth-input" type="password" id="loginPass" placeholder="Введите пароль" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="auth-submit" onclick="doLogin()">Войти в аккаунт</button>
+      <div class="auth-divider">Нет аккаунта? <span style="color:var(--accent2);cursor:pointer" onclick="switchAuthTab('register')">Зарегистрироваться</span></div>
+    </div>
+    <div id="registerForm" class="auth-form" style="display:none">
+      <div><div class="auth-label">Придумайте логин</div><input class="auth-input" type="text" id="regUser" placeholder="Минимум 4 символа"></div>
+      <div><div class="auth-label">Email (необязательно)</div><input class="auth-input" type="email" id="regEmail" placeholder="example@mail.com"></div>
+      <div><div class="auth-label">Пароль</div><input class="auth-input" type="password" id="regPass" placeholder="Минимум 6 символов"></div>
+      <div><div class="auth-label">Повторите пароль</div><input class="auth-input" type="password" id="regPass2" placeholder="Повторите пароль"></div>
+      <button class="auth-submit" onclick="doRegister()">Создать аккаунт</button>
+      <div class="auth-bonus">🎁 После регистрации вам будет доступна торговля с лучшими курсами (+10% к рыночной цене)</div>
+    </div>
+  </div>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="landingPage" style="display:block;min-height:100vh;background:var(--bg);overflow-y:auto;">
+
+  <!-- Landing Nav -->
+  <div style="position:sticky;top:0;z-index:100;background:rgba(11,13,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;gap:16px;">
+    <div class="logo" style="font-size:20px">Kripto<span>ex</span></div>
+    <div style="flex:1;overflow:hidden;display:flex;align-items:center;">
+      <div style="display:flex;gap:20px;white-space:nowrap;overflow:hidden;" id="landingTickerInner"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+      <button onclick="openAuthModal('login')" style="background:transparent;border:1px solid var(--border2);color:var(--text);padding:8px 20px;border-radius:var(--radius2);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Войти</button>
+      <button onclick="openAuthModal('register')" style="background:var(--accent);border:none;color:#fff;padding:8px 22px;border-radius:var(--radius2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Регистрация</button>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <div style="background:linear-gradient(135deg,#070c1f 0%,#0e1530 40%,#0a1020 100%);padding:80px 40px 60px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(91,110,245,0.12),transparent);pointer-events:none;"></div>
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(91,110,245,.15);border:1px solid rgba(91,110,245,.3);border-radius:20px;padding:6px 16px;font-size:13px;color:var(--accent2);margin-bottom:24px;">
+      🇪🇪 Лицензированная биржа · Эстония FIU/VASP · +10% к рыночным ценам
+    </div>
+    <h1 style="font-size:clamp(36px,5vw,62px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:18px;max-width:800px;margin-left:auto;margin-right:auto;">
+      Купите криптовалюту<br><span style="color:var(--accent2);">по лучшим ценам в мире</span>
+    </h1>
+    <p style="font-size:17px;color:var(--text2);max-width:560px;margin:0 auto 36px;line-height:1.7;">
+      Kriptex предлагает курсы <strong style="color:var(--green)">на 10% выше рынка</strong>. Более 100 криптовалют, минимальная комиссия 0.1%, лицензия VASP Эстонии.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:50px;">
+      <button onclick="openAuthModal('register')" style="background:var(--accent);border:none;color:#fff;padding:14px 36px;border-radius:var(--radius2);font-size:16px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;box-shadow:0 4px 24px rgba(91,110,245,.4);" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">🚀 Начать торговать</button>
+      <button onclick="openAuthModal('login')" style="background:transparent;border:1px solid var(--border2);color:var(--text);padding:14px 32px;border-radius:var(--radius2);font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)'">Войти в аккаунт</button>
+    </div>
+
+    <!-- Live prices strip -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 24px;max-width:900px;margin:0 auto;">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">💹 Актуальные цены Kriptex (выше рынка на 10%)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="landingPrices"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div style="padding:50px 40px;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center;">
+      <div><div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent2);margin-bottom:6px">100+</div><div style="font-size:14px;color:var(--text2)">Криптовалют</div></div>
+      <div><div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--green);margin-bottom:6px">+10%</div><div style="font-size:14px;color:var(--text2)">Выше рыночной цены</div></div>
+      <div><div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:#fff;margin-bottom:6px">0.1%</div><div style="font-size:14px;color:var(--text2)">Комиссия</div></div>
+      <div><div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--gold);margin-bottom:6px">VASP</div><div style="font-size:14px;color:var(--text2)">Лицензия Эстония</div></div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div style="padding:60px 40px;max-width:1100px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:40px;">
+      <h2 style="font-size:32px;font-weight:700;color:#fff;margin-bottom:10px">Почему выбирают Kriptex?</h2>
+      <p style="font-size:15px;color:var(--text2)">Мы созданы для тех, кто ценит выгоду, безопасность и простоту</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">💰</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Лучшие курсы</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Наши цены на 10% выше среднерыночных. Продавайте и покупайте выгоднее, чем на любой другой бирже.</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">🔐</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Максимальная безопасность</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">95% активов в холодных кошельках. KYC/AML верификация. Соответствие директивам FATF и ЕС.</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">🏛️</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Официальная лицензия</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Зарегистрированы и лицензированы в Эстонии. Лицензия VASP (Virtual Asset Service Provider) от FIU.</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">⚡</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Мгновенное исполнение</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Ордера исполняются за миллисекунды. Живой стакан ордеров и японские свечи в реальном времени.</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">📱</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Мобильное приложение</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Мобильное приложение для iOS и Android. Торгуйте в любое время из любой точки мира.</div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text3)">🍎 App Store — скоро</span>
+          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text3)">🤖 Google Play — скоро</span>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-size:36px;margin-bottom:14px">🌍</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#fff">Поддержка 24/7</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Русскоязычная служба поддержки работает круглосуточно. Ответим на любой вопрос в течение нескольких минут.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile App Mock -->
+  <div style="background:linear-gradient(135deg,#0e1530,#1a2040);border-top:1px solid rgba(91,110,245,.2);border-bottom:1px solid rgba(91,110,245,.2);padding:60px 40px;">
+    <div style="max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+      <div>
+        <div style="font-size:13px;color:var(--accent2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">📱 Мобильное приложение</div>
+        <h2 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:16px;line-height:1.3">Торгуйте с телефона<br>в любой момент</h2>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:24px">Полный функционал биржи в вашем кармане. Живые котировки, уведомления о сделках, пополнение и вывод средств.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 18px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px">🍎</span>
+            <div><div style="font-size:10px;color:var(--text3)">Скачать в</div><div style="font-size:14px;font-weight:600;color:#fff">App Store</div><div style="font-size:10px;color:var(--text3)">Скоро</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 18px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px">🤖</span>
+            <div><div style="font-size:10px;color:var(--text3)">Скачать в</div><div style="font-size:14px;font-weight:600;color:#fff">Google Play</div><div style="font-size:10px;color:var(--text3)">Скоро</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Phone mockup -->
+      <div style="display:flex;justify-content:center;">
+        <div style="width:220px;height:420px;background:linear-gradient(160deg,#1a2040,#0e1022);border:2px solid rgba(91,110,245,.4);border-radius:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 6px rgba(91,110,245,.08);overflow:hidden;padding:16px 12px;">
+          <div style="background:#0b0d14;border-radius:24px;height:100%;display:flex;flex-direction:column;gap:8px;">
+            <div style="background:rgba(91,110,245,.15);border-radius:12px;padding:10px;text-align:center;">
+              <div style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--accent2)">KRIPTEX</div>
+            </div>
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+              <div style="font-size:9px;color:var(--text3);margin-bottom:4px">Ваш баланс</div>
+              <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:#fff">$12,450.00</div>
+              <div style="font-size:9px;color:var(--green);margin-top:2px">▲ +$842.30 сегодня</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="background:rgba(0,214,143,.1);border:1px solid rgba(0,214,143,.2);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:14px">💳</div>
+                <div style="font-size:8px;color:var(--green);margin-top:2px">Пополнить</div>
+              </div>
+              <div style="background:rgba(91,110,245,.1);border:1px solid rgba(91,110,245,.2);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:14px">⚡</div>
+                <div style="font-size:8px;color:var(--accent2);margin-top:2px">Торговля</div>
+              </div>
+            </div>
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;flex:1;">
+              <div style="font-size:8px;color:var(--text3);margin-bottom:6px">ТОП МОНЕТЫ</div>
+              <div style="display:flex;flex-direction:column;gap:5px;" id="phoneMockPrices"></div>
+            </div>
+          </div>
+          <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- License Section -->
+  <div style="padding:50px 40px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;">
+    <div>
+      <div style="font-size:13px;color:var(--green);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">🏛️ Регуляция и лицензия</div>
+      <h2 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:16px;line-height:1.3">Работаем полностью официально</h2>
+      <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px">Kriptex зарегистрирован и лицензирован в Эстонии. Мы полностью соответствуем требованиям ЕС и FATF в части AML/CFT.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 16px;">
+          <span style="font-size:20px">🇪🇪</span>
+          <div><div style="font-size:13px;font-weight:500">Лицензия VASP · FIU Эстония</div><div style="font-size:11px;color:var(--text3)">Virtual Asset Service Provider</div></div>
+          <span style="margin-left:auto;background:var(--green2);color:var(--green);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">✓ Активна</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 16px;">
+          <span style="font-size:20px">⚖️</span>
+          <div><div style="font-size:13px;font-weight:500">AML/KYC · 4AMLD / 5AMLD</div><div style="font-size:11px;color:var(--text3)">Соответствие директивам ЕС</div></div>
+          <span style="margin-left:auto;background:var(--green2);color:var(--green);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">✓ FATF</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 16px;">
+          <span style="font-size:20px">🔒</span>
+          <div><div style="font-size:13px;font-weight:500">GDPR · Защита данных</div><div style="font-size:11px;color:var(--text3)">Шифрование и холодное хранение</div></div>
+          <span style="margin-left:auto;background:var(--green2);color:var(--green);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">✓ EU</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,#0a1f0a,#0e2a0e);border:1px solid rgba(0,214,143,.2);border-radius:var(--radius);padding:28px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:14px">🏛️</div>
+      <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:8px">Kriptex OÜ</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Зарегистрировано в Эстонии</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Таллин, Эстонская Республика</div>
+      <div style="background:var(--green2);border:1px solid rgba(0,214,143,.3);border-radius:var(--radius2);padding:12px;font-size:13px;color:var(--green)">
+        ✓ Лицензия VASP активна и действительна
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="background:linear-gradient(135deg,#0e1530,#1a2040);border-top:1px solid rgba(91,110,245,.2);padding:60px 40px;text-align:center;">
+    <h2 style="font-size:32px;font-weight:700;color:#fff;margin-bottom:14px">Готовы начать торговать?</h2>
+    <p style="font-size:15px;color:var(--text2);margin-bottom:30px;max-width:500px;margin-left:auto;margin-right:auto;">Регистрация занимает 30 секунд. Получите доступ к 100+ криптовалютам по лучшим ценам.</p>
+    <button onclick="openAuthModal('register')" style="background:var(--accent);border:none;color:#fff;padding:16px 44px;border-radius:var(--radius2);font-size:17px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 24px rgba(91,110,245,.4);transition:.2s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Создать аккаунт бесплатно →</button>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:var(--bg2);border-top:1px solid var(--border);padding:24px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div class="logo" style="font-size:16px">Kripto<span>ex</span></div>
+    <div style="font-size:12px;color:var(--text3)">© 2025 Kriptex OÜ · Эстония · VASP лицензия · Все права защищены</div>
+    <div style="font-size:12px;color:var(--text3)">support@kriptex.io</div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="mainApp" style="display:none;">
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Kripto<span>ex</span></div>
+  <div class="ticker-strip"><div class="ticker-inner" id="tickerInner"></div></div>
+  <div class="nav-right">
+    <div class="notif-btn" onclick="showToast('Нет новых уведомлений','🔔')">🔔</div>
+    <div class="user-chip">
+      <div class="user-avatar" id="navAvatar">?</div>
+      <span class="user-name" id="navUsername">—</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Выйти</button>
+  </div>
+</nav>
+
+<div class="layout">
+<sidebar>
+  <div class="nav-group-label">Главное</div>
+  <div class="nav-item active" data-page="market" onclick="switchPage('market',this)"><span class="icon">📊</span>Рынок</div>
+  <div class="nav-item" data-page="trade" onclick="switchPage('trade',this)"><span class="icon">⚡</span>Торговля<span class="nav-badge">+10%</span></div>
+  <div class="nav-group-label">Финансы</div>
+  <div class="nav-item" data-page="wallet" onclick="switchPage('wallet',this)"><span class="icon">👛</span>Кошелёк</div>
+  <div class="nav-item" data-page="deposit" onclick="switchPage('deposit',this)"><span class="icon">💳</span>Пополнение</div>
+  <div class="nav-group-label">Верификация</div>
+  <div class="nav-item" data-page="kyc" onclick="switchPage('kyc',this)"><span class="icon">🪪</span>KYC Верификация</div>
+  <div class="nav-group-label">Компания</div>
+  <div class="nav-item" data-page="about" onclick="switchPage('about',this)"><span class="icon">🏛️</span>О бирже</div>
+  <div class="nav-item" data-page="legal" onclick="switchPage('legal',this)"><span class="icon">📜</span>Документы</div>
+  <div class="nav-item" data-page="history" onclick="switchPage('history',this)"><span class="icon">📋</span>История</div>
+  <div class="nav-item" data-page="settings" onclick="switchPage('settings',this)"><span class="icon">⚙️</span>Настройки</div>
+  <div class="bottom">
+    <div class="portfolio-mini">
+      <div class="label">Мой баланс</div>
+      <div class="amount" id="sidebalance">$0.00</div>
+      <div class="change" id="sidechange" style="color:var(--text3)">Пополните кошелёк</div>
+    </div>
+  </div>
+</sidebar>
+
+<main>
+
+<!-- MARKET PAGE -->
+<div class="page active" id="page-market">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Рынок криптовалют</div>
+      <div class="page-subtitle">Актуальные курсы — лучшие цены на рынке</div>
+    </div>
+    <div class="search-bar">
+      <span style="color:var(--text3);font-size:14px">🔍</span>
+      <input type="text" placeholder="Поиск монеты..." id="coinSearch" oninput="filterCoins()">
+    </div>
+  </div>
+
+  <div class="promo-banner">
+    <div class="promo-icon">🚀</div>
+    <div class="promo-text">
+      <strong>Kriptex — курсы на 10% выше рынка!</strong>
+      <span>Мы предлагаем самые выгодные условия для покупки и продажи криптовалюты.</span>
+    </div>
+    <div class="promo-badge">+10% к курсу</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">BTC на Kriptex</div><div class="stat-val" id="btcStatPrice">$82,511</div><div class="stat-sub up">▲ Выгоднее рынка на 10%</div></div>
+    <div class="stat-card"><div class="stat-label">ETH на Kriptex</div><div class="stat-val" id="ethStatPrice">$1,843</div><div class="stat-sub up">▲ Выгоднее рынка на 10%</div></div>
+    <div class="stat-card"><div class="stat-label">XMR на Kriptex</div><div class="stat-val" id="xmrStatPrice">$258</div><div class="stat-sub up">▲ Самая приватная монета</div></div>
+    <div class="stat-card"><div class="stat-label">Монет в топе</div><div class="stat-val">100</div><div class="stat-sub">обновляется в реальном времени</div></div>
+  </div>
+
+  <div class="filter-tabs">
+    <button class="ftab active" onclick="setFilter('all',this)">Все монеты</button>
+    <button class="ftab" onclick="setFilter('top10',this)">Топ-10</button>
+    <button class="ftab" onclick="setFilter('gainers',this)">Растущие 🔥</button>
+    <button class="ftab" onclick="setFilter('losers',this)">Падающие</button>
+    <button class="ftab" onclick="setFilter('defi',this)">DeFi</button>
+    <button class="ftab" onclick="setFilter('stablecoins',this)">Стейблкоины</button>
+  </div>
+
+  <div class="coin-table">
+    <div class="ct-header">
+      <span>#</span><span style="text-align:left">Монета</span><span>Цена</span><span>24ч %</span><span>Объём 24ч</span><span>График 7д</span><span></span>
+    </div>
+    <div id="coinTableBody"></div>
+  </div>
+</div>
+
+<!-- TRADE PAGE -->
+<div class="page" id="page-trade">
+  <div class="page-header">
+    <div><div class="page-title">Торговля</div><div class="page-subtitle">Покупка и продажа по лучшим ценам</div></div>
+    <select id="tradePairSelect" onchange="updateTradePair()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:8px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;"></select>
+  </div>
+  <div class="trade-layout">
+    <div>
+      <div class="chart-section" style="margin-bottom:16px">
+        <div class="chart-header">
+          <div class="selected-coin">
+            <div class="sel-icon" id="tradeIcon" style="background:#f7931a22;color:#f7931a">BTC</div>
+            <div><div class="sel-name" id="tradeName">Bitcoin</div><div class="sel-sym" id="tradeSym">BTC/USDT</div></div>
+          </div>
+          <div id="tradePrice" class="sel-price">$82,511</div>
+          <div id="tradeChange" class="sel-change up">+2.34%</div>
+          <div class="chart-intervals">
+            <div class="ci active" onclick="setCi(this)">1м</div>
+            <div class="ci" onclick="setCi(this)">15м</div>
+            <div class="ci" onclick="setCi(this)">1ч</div>
+            <div class="ci" onclick="setCi(this)">4ч</div>
+            <div class="ci" onclick="setCi(this)">1д</div>
+          </div>
+        </div>
+        <canvas id="mainChart"></canvas>
+      </div>
+      <div class="orderbook-section">
+        <div class="ob-header">Книга ордеров</div>
+        <div class="ob-cols"><span>Цена (USDT)</span><span>Кол-во</span><span>Сумма</span></div>
+        <div id="asks"></div>
+        <div class="ob-spread">Спред: <strong id="spreadVal">$0.00</strong></div>
+        <div id="bids"></div>
+      </div>
+    </div>
+    <div class="order-panel">
+      <div class="order-card">
+        <div class="order-tabs">
+          <button class="otab buy active" id="buyTab" onclick="setOrderSide('buy')">Купить</button>
+          <button class="otab sell" id="sellTab" onclick="setOrderSide('sell')">Продать</button>
+        </div>
+        <div class="bal-row"><span>Баланс USDT</span><span id="availBal">0.00 USDT</span></div>
+        <div class="form-row">
+          <div class="form-label">Цена (USDT)</div>
+          <div class="input-wrapper"><input class="form-input" type="number" id="orderPrice" placeholder="0.00" oninput="this._edited=true;calcOrderTotal()" onfocus="this._edited=true" onblur="if(!this.value)this._edited=false"><span class="input-suffix">USDT</span></div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Количество</div>
+          <div class="input-wrapper"><input class="form-input" type="number" id="orderQty" placeholder="0.00000" oninput="calcOrderTotal()"><span class="input-suffix" id="orderSuffix">BTC</span></div>
+        </div>
+        <div class="pct-row">
+          <button class="pct-btn" onclick="setPct(25)">25%</button>
+          <button class="pct-btn" onclick="setPct(50)">50%</button>
+          <button class="pct-btn" onclick="setPct(75)">75%</button>
+          <button class="pct-btn" onclick="setPct(100)">100%</button>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Итого</div>
+          <div class="input-wrapper"><input class="form-input" type="number" id="orderTotal" placeholder="0.00" readonly style="opacity:.7"><span class="input-suffix">USDT</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:14px"><span>Комиссия (0.1%)</span><span id="feeVal" style="font-family:'Space Mono',monospace">— USDT</span></div>
+        <button class="submit-btn buy" id="submitOrderBtn" onclick="submitOrder()">Купить BTC</button>
+      </div>
+      <div class="order-card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:12px">Открытые ордера</div>
+        <div id="openOrders" style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Нет открытых ордеров</div>
+      </div>
+      <div class="order-card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:12px">Последние сделки</div>
+        <div id="recentTrades"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET PAGE -->
+<div class="page" id="page-wallet">
+  <div class="page-header">
+    <div><div class="page-title">Мой кошелёк</div><div class="page-subtitle">Управление активами</div></div>
+  </div>
+  <div class="wallet-top">
+    <div class="total-card">
+      <div class="tc-label">Общий баланс (USDT)</div>
+      <div class="tc-amount" id="walletTotal">$0.00</div>
+      <div class="tc-sub" id="walletSub">Пополните кошелёк чтобы начать торговать</div>
+      <div class="wallet-actions">
+        <button class="wa-btn deposit" onclick="switchPage('deposit',null)">💳 Пополнить</button>
+        <button class="wa-btn withdraw" onclick="openWithdrawModal()">🏧 Вывести</button>
+        <button class="wa-btn withdraw" onclick="switchPage('trade',null)">⚡ Торговать</button>
+      </div>
+    </div>
+    <div class="alloc-card">
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px">Распределение портфеля</div>
+      <div style="font-size:12px;color:var(--text2)">Ваши активы</div>
+      <div class="alloc-list" id="allocList"><div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Нет активов — пополните кошелёк</div></div>
+    </div>
+  </div>
+  <div class="holdings-table">
+    <div class="ht-header">
+      <span>Актив</span><span style="text-align:right">Количество</span><span style="text-align:right">Цена</span><span style="text-align:right">Стоимость</span><span style="text-align:right">Изм. 24ч</span>
+    </div>
+    <div id="holdingsBody">
+      <div class="empty-wallet"><div class="ew-icon">👛</div><p>Ваш кошелёк пуст</p><small>Пополните баланс через раздел «Пополнение»</small></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPOSIT PAGE -->
+<div class="page" id="page-deposit">
+  <div class="page-header">
+    <div><div class="page-title">Пополнение счёта</div><div class="page-subtitle">Внесите средства на ваш аккаунт</div></div>
+  </div>
+  <div class="deposit-layout">
+    <div class="dep-card">
+      <h3>Выберите метод пополнения</h3>
+      <div class="method-grid">
+        <div class="method-card selected" onclick="selectDepMethod(this,'crypto')"><div class="micon">₿</div><div class="mname">Криптовалюта</div><div class="msub">Без комиссий</div></div>
+        <div class="method-card" onclick="selectDepMethod(this,'card')"><div class="micon">💳</div><div class="mname">Банк. карта</div><div class="msub">Visa / Mastercard</div></div>
+        <div class="method-card" onclick="selectDepMethod(this,'bank')"><div class="micon">🏦</div><div class="mname">Банк. перевод</div><div class="msub">SWIFT / SEPA</div></div>
+        <div class="method-card" onclick="selectDepMethod(this,'p2p')"><div class="micon">🤝</div><div class="mname">P2P</div><div class="msub">0% комиссия</div></div>
+      </div>
+      <div id="cryptoDepBlock">
+        <div class="form-row">
+          <div class="form-label">Монета для пополнения</div>
+          <select class="form-input" id="depCoinSelect" onchange="updateDepAddress()" style="cursor:pointer">
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="USDT_TRC20">Tether USDT (TRC-20)</option>
+            <option value="USDT_ERC20">Tether USDT (ERC-20)</option>
+            <option value="SOL">Solana (SOL)</option>
+            <option value="TRX">Tron (TRX)</option>
+            <option value="LTC">Litecoin (LTC)</option>
+            <option value="XMR">Monero (XMR)</option>
+          </select>
+        </div>
+        <div class="form-label">Адрес для пополнения</div>
+        <div class="dep-address" id="depAddress">— адрес будет добавлен администратором —</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="copy-btn" onclick="copyAddress()">📋 Копировать адрес</button>
+          <span style="font-size:11px;color:var(--text3)">Сеть: <strong id="depNetwork">BTC</strong></span>
+        </div>
+        <div class="qr-placeholder">
+          <div id="qrImg"></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px">QR-код</div>
+        </div>
+        <div class="dep-pending-box" id="depPendingBox">
+          <strong>⏳ Ожидаем подтверждения транзакции</strong>
+          После отправки средства поступят на ваш счёт в течение нескольких минут.
+        </div>
+        <button class="submit-btn buy" style="background:var(--accent);margin-top:12px" onclick="confirmDeposit()">✅ Я отправил(а) средства</button>
+      </div>
+    </div>
+    <div>
+      <div class="dep-card" style="margin-bottom:16px">
+        <h3>Как пополнить счёт</h3>
+        <div class="dep-steps">
+          <div class="dep-step"><div class="dep-step-num">1</div><div class="dep-step-text"><strong>Выберите монету</strong><p>Выберите криптовалюту и скопируйте адрес кошелька.</p></div></div>
+          <div class="dep-step"><div class="dep-step-num">2</div><div class="dep-step-text"><strong>Отправьте перевод</strong><p>Переведите нужную сумму со своего кошелька на указанный адрес.</p></div></div>
+          <div class="dep-step"><div class="dep-step-num">3</div><div class="dep-step-text"><strong>Нажмите кнопку</strong><p>После отправки нажмите «Я отправил(а) средства» — мы обработаем платёж.</p></div></div>
+          <div class="dep-step"><div class="dep-step-num">4</div><div class="dep-step-text"><strong>Начинайте торговать!</strong><p>BTC: ~30 мин · ETH/USDT: ~5 мин · SOL: ~1 мин · XMR: ~20 мин</p></div></div>
+        </div>
+      </div>
+      <div class="dep-card">
+        <h3>История пополнений</h3>
+        <table class="history-table">
+          <thead><tr><th>Монета</th><th>Сумма</th><th>Дата</th><th>Статус</th></tr></thead>
+          <tbody id="depHistory"><tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">История пуста</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ABOUT PAGE -->
+<div class="page" id="page-about">
+  <div class="about-hero">
+    <div class="about-hero-badge">🇪🇪 Лицензия Эстония · FIU · VASP</div>
+    <h1>Добро пожаловать в <span>Kriptex</span></h1>
+    <p>Kriptex — лицензированная криптовалютная биржа нового поколения. Мы созданы командой профессионалов с одной целью: сделать криптоторговлю доступной, безопасной и прозрачной для каждого.</p>
+  </div>
+
+  <div class="license-banner">
+    <div class="license-icon">🏛️</div>
+    <div class="license-text">
+      <strong>Официальная лицензия — Эстония (FIU / VASP)</strong>
+      <p>Kriptex зарегистрирован и лицензирован в Эстонии как поставщик услуг виртуальных активов (Virtual Asset Service Provider).</p>
+    </div>
+    <div class="license-badge">✓ Лицензия активна</div>
+  </div>
+
+  <div class="about-stats">
+    <div class="about-stat"><div class="as-val">100+</div><div class="as-label">Криптовалют на бирже</div></div>
+    <div class="about-stat"><div class="as-val">0.1%</div><div class="as-label">Комиссия за сделку</div></div>
+    <div class="about-stat"><div class="as-val">24/7</div><div class="as-label">Поддержка пользователей</div></div>
+    <div class="about-stat"><div class="as-val">🇪🇪</div><div class="as-label">Юрисдикция Эстония</div></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <h3>🎯 Наша миссия</h3>
+      <p>Мы верим, что криптовалюта должна быть доступна каждому человеку в мире. Kriptex создан чтобы убрать барьеры между людьми и децентрализованной экономикой.</p>
+    </div>
+    <div class="about-card">
+      <h3>🔐 Безопасность</h3>
+      <ul>
+        <li>Хранение 95% активов в холодных кошельках</li>
+        <li>Двухфакторная аутентификация (2FA)</li>
+        <li>Обязательная KYC/AML верификация</li>
+        <li>Страхование активов пользователей</li>
+        <li>Соответствие директивам FATF и ЕС</li>
+      </ul>
+    </div>
+    <div class="about-card">
+      <h3>⚖️ Регуляция и лицензия</h3>
+      <ul>
+        <li>Лицензия VASP от FIU Эстонии</li>
+        <li>Соответствие AML/CFT требованиям ЕС</li>
+        <li>Полная KYC верификация пользователей</li>
+        <li>Отчётность перед регуляторами ЕС</li>
+      </ul>
+    </div>
+    <div class="about-card">
+      <h3>🚀 Преимущества Kriptex</h3>
+      <ul>
+        <li>Лучшие курсы на рынке — выше на 10%</li>
+        <li>Мгновенное исполнение ордеров</li>
+        <li>Поддержка 100+ криптовалют</li>
+        <li>Низкие комиссии — от 0.1%</li>
+        <li>Русскоязычная поддержка 24/7</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="font-size:18px;font-weight:600;margin-bottom:16px">👥 Команда основателей</div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar">GM</div>
+      <div class="team-name">Geraldo Marques</div>
+      <div class="team-role">CEO & Co-Founder</div>
+      <div class="team-bio">Бразильский долларовый миллионер, основатель и генеральный директор Kriptex. Многолетний опыт в финансах и инвестициях.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">SW</div>
+      <div class="team-name">Steve Willson</div>
+      <div class="team-role">CTO & Co-Founder</div>
+      <div class="team-bio">Один из первых основателей криптобиржи Gate.io. Технический директор и архитектор торговой платформы Kriptex.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">VV</div>
+      <div class="team-name">Viktor Vinisichii</div>
+      <div class="team-role">CLO — Юридический директор</div>
+      <div class="team-bio">Юрист с опытом работы более 10 лет в сфере криптовалюты. Ответственный за лицензирование и соответствие AML/KYC.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGAL PAGE -->
+<div class="page" id="page-legal">
+  <div class="page-header">
+    <div><div class="page-title">Юридические документы</div><div class="page-subtitle">Kriptex OÜ · Эстония · Лицензия VASP</div></div>
+  </div>
+  <div class="legal-pending">⏳ <span>Документы находятся в процессе оформления.</span></div>
+  <div class="doc-tabs">
+    <button class="doc-tab active" onclick="switchDoc('terms',this)">Пользовательское соглашение</button>
+    <button class="doc-tab" onclick="switchDoc('privacy',this)">Политика конфиденциальности</button>
+    <button class="doc-tab" onclick="switchDoc('aml',this)">AML / KYC политика</button>
+    <button class="doc-tab" onclick="switchDoc('risks',this)">Предупреждение о рисках</button>
+    <button class="doc-tab" onclick="switchDoc('fees',this)">Комиссии и тарифы</button>
+  </div>
+
+  <div class="legal-doc" id="legal-terms">
+    <h2>Пользовательское соглашение</h2>
+    <div class="legal-meta"><span>📅 [Дата будет указана]</span><span>🏛️ Kriptex OÜ, Эстония</span></div>
+    <div class="legal-section">
+      <h3>1. Общие положения</h3>
+      <p>Настоящее Пользовательское соглашение регулирует отношения между Kriptex OÜ и физическими лицами, использующими платформу Kriptex.</p>
+      <p>Компания зарегистрирована в Эстонии и действует на основании лицензии VASP, выданной Финансовой разведкой Эстонии (FIU).</p>
+    </div>
+    <div class="legal-section">
+      <h3>2. Регистрация и верификация</h3>
+      <p>Для использования торговых функций платформы Пользователь обязан:</p>
+      <ul>
+        <li>Пройти процедуру KYC верификации</li>
+        <li>Предоставить достоверные личные данные</li>
+        <li>Быть старше 18 лет</li>
+        <li>Не являться резидентом стран из санкционных списков</li>
+      </ul>
+    </div>
+    <div class="legal-section">
+      <h3>3. Применимое право</h3>
+      <p>Соглашение регулируется законодательством Эстонской Республики.</p>
+    </div>
+  </div>
+
+  <div class="legal-doc" id="legal-privacy" style="display:none">
+    <h2>Политика конфиденциальности</h2>
+    <div class="legal-meta"><span>📅 [Дата будет добавлена]</span><span>🇪🇪 Соответствие GDPR</span></div>
+    <div class="legal-section">
+      <h3>1. Сбор данных</h3>
+      <p>В соответствии с GDPR, Kriptex собирает: идентификационные данные, контактные данные, документы, финансовые данные, технические данные.</p>
+    </div>
+    <div class="legal-section">
+      <h3>2. Ваши права (GDPR)</h3>
+      <ul>
+        <li>Право на доступ к вашим данным</li>
+        <li>Право на исправление</li>
+        <li>Право на удаление (с ограничениями AML)</li>
+        <li>Право на переносимость данных</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legal-doc" id="legal-aml" style="display:none">
+    <h2>Политика AML / KYC</h2>
+    <div class="legal-meta"><span>⚖️ 4AMLD / 5AMLD / FATF</span></div>
+    <div class="legal-section">
+      <h3>Уровни верификации</h3>
+      <ul>
+        <li>Уровень 1 — базовая верификация: лимит $1,000/день</li>
+        <li>Уровень 2 — паспорт + селфи: лимит $10,000/день</li>
+        <li>Уровень 3 — расширенная верификация: без лимита</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legal-doc" id="legal-risks" style="display:none">
+    <h2>Предупреждение о рисках</h2>
+    <div class="legal-section">
+      <h3>⚠️ Важное предупреждение</h3>
+      <p>Торговля криптовалютами сопряжена с высоким риском и может привести к потере вложенных средств.</p>
+      <ul>
+        <li>Высокая волатильность</li>
+        <li>Регуляторный риск</li>
+        <li>Технологический риск</li>
+        <li>Не инвестируйте средства, потерю которых не можете себе позволить</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legal-doc" id="legal-fees" style="display:none">
+    <h2>Комиссии и тарифы</h2>
+    <div class="legal-section">
+      <h3>Торговые комиссии</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:10px;color:var(--text3);font-weight:500">Тип</th><th style="text-align:right;padding:10px;color:var(--text3);font-weight:500">Комиссия</th></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px;color:var(--text2)">Спот-торговля</td><td style="padding:10px;text-align:right;font-family:'Space Mono',monospace;color:var(--green)">0.10%</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px;color:var(--text2)">Вывод BTC</td><td style="padding:10px;text-align:right;font-family:'Space Mono',monospace">0.0005 BTC</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px;color:var(--text2)">Вывод USDT (TRC-20)</td><td style="padding:10px;text-align:right;font-family:'Space Mono',monospace">1 USDT</td></tr>
+        <tr><td style="padding:10px;color:var(--text2)">Пополнение криптой</td><td style="padding:10px;text-align:right;font-family:'Space Mono',monospace;color:var(--green)">Бесплатно</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- KYC PAGE -->
+<div class="page" id="page-kyc">
+  <div class="page-header">
+    <div><div class="page-title">KYC Верификация</div><div class="page-subtitle">Подтвердите личность для снятия лимитов</div></div>
+  </div>
+  <div class="kyc-layout">
+    <div>
+      <div class="kyc-steps-nav" style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Этапы верификации</div>
+        <div class="kyc-step-item active" onclick="switchKyc(1)"><div class="kyc-step-num" id="knum1">1</div><div><div class="kyc-step-label">Личные данные</div><div class="kyc-step-sub">ФИО, дата рождения, гражданство</div></div></div>
+        <div class="kyc-step-item" onclick="switchKyc(2)"><div class="kyc-step-num" id="knum2">2</div><div><div class="kyc-step-label">Документ</div><div class="kyc-step-sub">Паспорт или национальный ID</div></div></div>
+        <div class="kyc-step-item" onclick="switchKyc(3)"><div class="kyc-step-num" id="knum3">3</div><div><div class="kyc-step-label">Селфи с документом</div><div class="kyc-step-sub">Фото лица для подтверждения</div></div></div>
+        <div class="kyc-step-item" onclick="switchKyc(4)"><div class="kyc-step-num" id="knum4">4</div><div><div class="kyc-step-label">Адрес проживания</div><div class="kyc-step-sub">Подтверждение адреса</div></div></div>
+        <div class="kyc-step-item" onclick="switchKyc(5)"><div class="kyc-step-num" id="knum5">5</div><div><div class="kyc-step-label">Источник средств</div><div class="kyc-step-sub">Финансовые документы</div></div></div>
+      </div>
+      <div class="kyc-main-card">
+        <div class="kyc-step-content active" id="kyc-step-1">
+          <div class="kyc-step-title">Шаг 1 — Личные данные</div>
+          <div class="kyc-step-desc">Введите ваши персональные данные точно как указано в паспорте.</div>
+          <div class="kyc-form-grid">
+            <div class="form-row"><div class="form-label">Фамилия</div><input class="form-input" type="text" placeholder="Иванов"></div>
+            <div class="form-row"><div class="form-label">Имя</div><input class="form-input" type="text" placeholder="Иван"></div>
+            <div class="form-row"><div class="form-label">Отчество</div><input class="form-input" type="text" placeholder="Иванович"></div>
+            <div class="form-row"><div class="form-label">Дата рождения</div><input class="form-input" type="date"></div>
+            <div class="form-row"><div class="form-label">Гражданство</div><select class="form-input" style="cursor:pointer"><option>Россия</option><option>Украина</option><option>Беларусь</option><option>Казахстан</option><option>Эстония</option></select></div>
+            <div class="form-row"><div class="form-label">Номер телефона</div><input class="form-input" type="tel" placeholder="+7 999 000 00 00"></div>
+          </div>
+          <div class="form-row" style="margin-top:4px"><div class="form-label">Email</div><input class="form-input" type="email" placeholder="example@mail.com"></div>
+          <div class="kyc-info-box" style="margin-top:16px;margin-bottom:16px"><strong>🔐 Ваши данные защищены</strong>Все персональные данные хранятся в зашифрованном виде в соответствии с GDPR.</div>
+          <button class="submit-btn buy" style="background:var(--accent)" onclick="kycNext(1)">Далее →</button>
+        </div>
+        <div class="kyc-step-content" id="kyc-step-2">
+          <div class="kyc-step-title">Шаг 2 — Документ удостоверяющий личность</div>
+          <div class="kyc-step-desc">Загрузите фотографию паспорта или ID-карты.</div>
+          <div class="form-row"><div class="form-label">Тип документа</div><select class="form-input" style="cursor:pointer;margin-bottom:16px"><option>Паспорт</option><option>Загранпаспорт</option><option>Национальная ID-карта</option></select></div>
+          <div class="kyc-upload-box" onclick="showToast('Загрузка будет доступна после запуска','📁')"><div class="kyc-upload-icon">📄</div><div class="kyc-upload-text">Лицевая сторона документа</div><div class="kyc-upload-sub">JPG, PNG или PDF · Максимум 10 МБ</div></div>
+          <div class="kyc-upload-box" onclick="showToast('Загрузка будет доступна после запуска','📁')"><div class="kyc-upload-icon">📄</div><div class="kyc-upload-text">Обратная сторона документа</div><div class="kyc-upload-sub">JPG, PNG или PDF · Максимум 10 МБ</div></div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="submit-btn sell" style="flex:0 0 auto;width:120px" onclick="kycPrev(2)">← Назад</button>
+            <button class="submit-btn buy" style="flex:1;background:var(--accent)" onclick="kycNext(2)">Далее →</button>
+          </div>
+        </div>
+        <div class="kyc-step-content" id="kyc-step-3">
+          <div class="kyc-step-title">Шаг 3 — Селфи с документом</div>
+          <div class="kyc-step-desc">Сфотографируйтесь, держа рядом с лицом открытый паспорт.</div>
+          <div class="kyc-info-box" style="margin-bottom:16px"><strong>📸 Требования:</strong>Смотрите в камеру · Хорошее освещение · Без головных уборов · Страница с фото в паспорте чётко видна</div>
+          <div class="kyc-upload-box" onclick="showToast('Загрузка будет доступна после запуска','📷')"><div class="kyc-upload-icon">🤳</div><div class="kyc-upload-text">Селфи с документом</div><div class="kyc-upload-sub">JPG или PNG · Максимум 10 МБ</div></div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="submit-btn sell" style="flex:0 0 auto;width:120px" onclick="kycPrev(3)">← Назад</button>
+            <button class="submit-btn buy" style="flex:1;background:var(--accent)" onclick="kycNext(3)">Далее →</button>
+          </div>
+        </div>
+        <div class="kyc-step-content" id="kyc-step-4">
+          <div class="kyc-step-title">Шаг 4 — Подтверждение адреса</div>
+          <div class="kyc-step-desc">Загрузите документ, подтверждающий адрес проживания (не более 3 месяцев).</div>
+          <div class="form-row"><div class="form-label">Тип документа</div><select class="form-input" style="cursor:pointer;margin-bottom:16px"><option>Счёт за коммунальные услуги</option><option>Банковская выписка</option><option>Справка о регистрации</option></select></div>
+          <div class="kyc-form-grid" style="margin-bottom:16px">
+            <div class="form-row"><div class="form-label">Страна</div><input class="form-input" type="text" placeholder="Россия"></div>
+            <div class="form-row"><div class="form-label">Город</div><input class="form-input" type="text" placeholder="Москва"></div>
+            <div class="form-row"><div class="form-label">Адрес</div><input class="form-input" type="text" placeholder="ул. Примерная, д.1"></div>
+            <div class="form-row"><div class="form-label">Почтовый индекс</div><input class="form-input" type="text" placeholder="123456"></div>
+          </div>
+          <div class="kyc-upload-box" onclick="showToast('Загрузка будет доступна','📁')"><div class="kyc-upload-icon">🏠</div><div class="kyc-upload-text">Документ подтверждения адреса</div></div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="submit-btn sell" style="flex:0 0 auto;width:120px" onclick="kycPrev(4)">← Назад</button>
+            <button class="submit-btn buy" style="flex:1;background:var(--accent)" onclick="kycNext(4)">Далее →</button>
+          </div>
+        </div>
+        <div class="kyc-step-content" id="kyc-step-5">
+          <div class="kyc-step-title">Шаг 5 — Источник средств</div>
+          <div class="kyc-step-desc">Стандартное требование AML регулятора.</div>
+          <div class="form-row"><div class="form-label">Источник средств</div><select class="form-input" style="cursor:pointer;margin-bottom:16px"><option>Заработная плата</option><option>Предпринимательская деятельность</option><option>Инвестиционный доход</option><option>Наследство</option></select></div>
+          <div class="form-row"><div class="form-label">Ожидаемый объём торгов в месяц</div><select class="form-input" style="cursor:pointer;margin-bottom:16px"><option>До $1,000</option><option>$1,000 — $10,000</option><option>$10,000 — $50,000</option><option>Свыше $50,000</option></select></div>
+          <div class="kyc-info-box" style="margin-top:4px;margin-bottom:16px"><strong>✅ Почти готово!</strong>После отправки заявки команда проверит документы в течение 24-48 часов.</div>
+          <div style="display:flex;gap:10px">
+            <button class="submit-btn sell" style="flex:0 0 auto;width:120px" onclick="kycPrev(5)">← Назад</button>
+            <button class="submit-btn buy" style="flex:1;background:var(--green);color:#000" onclick="submitKyc()">✅ Отправить на проверку</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="kyc-status-card" style="margin-bottom:16px">
+        <h3>Уровни верификации</h3>
+        <div class="kyc-level"><div class="kyc-level-icon">🔵</div><div class="kyc-level-info"><div class="kyc-level-name">Уровень 1 — Базовый</div><div class="kyc-level-limit">Email · Лимит: $1,000/день</div></div><div class="kyc-level-status done">✓ Готов</div></div>
+        <div class="kyc-level"><div class="kyc-level-icon">🟡</div><div class="kyc-level-info"><div class="kyc-level-name">Уровень 2 — Стандарт</div><div class="kyc-level-limit">Паспорт · Лимит: $10,000/день</div></div><div class="kyc-level-status pending" id="kyc-l2-status">На проверке</div></div>
+        <div class="kyc-level"><div class="kyc-level-icon">🟢</div><div class="kyc-level-info"><div class="kyc-level-name">Уровень 3 — Расширенный</div><div class="kyc-level-limit">Документы дохода · Без лимита</div></div><div class="kyc-level-status locked">🔒 Заблокировано</div></div>
+      </div>
+      <div class="kyc-status-card">
+        <h3>Зачем нужна верификация?</h3>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          <p style="margin-bottom:8px">🇪🇪 <strong style="color:var(--text)">Требование регулятора</strong> — Kriptex работает по лицензии VASP Эстонии.</p>
+          <p style="margin-bottom:8px">🔒 <strong style="color:var(--text)">Ваша защита</strong> — Верификация защищает ваш аккаунт.</p>
+          <p>💰 <strong style="color:var(--text)">Больше возможностей</strong> — Снятие лимитов на торговлю.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div><div class="page-title">История транзакций</div><div class="page-subtitle">Все операции по вашему аккаунту</div></div>
+    <select id="histFilter" onchange="renderHistoryPage()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:8px 12px;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+      <option value="all">Все операции</option>
+      <option value="completed">Выполненные</option>
+      <option value="pending">В ожидании</option>
+      <option value="failed">Отклонённые</option>
+    </select>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-card"><div class="stat-label">Всего операций</div><div class="stat-val" id="hist-count">0</div><div class="stat-sub">по аккаунту</div></div>
+    <div class="stat-card"><div class="stat-label">Пополнений</div><div class="stat-val" id="hist-deps" style="color:var(--green)">0</div><div class="stat-sub up">входящих</div></div>
+    <div class="stat-card"><div class="stat-label">Сделок</div><div class="stat-val" id="hist-trades">0</div><div class="stat-sub">купли-продажи</div></div>
+    <div class="stat-card"><div class="stat-label">Последняя</div><div class="stat-val" id="hist-last" style="font-size:14px">—</div><div class="stat-sub">дата операции</div></div>
+  </div>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;">Тип</th>
+          <th style="text-align:left;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;">Монета</th>
+          <th style="text-align:right;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;">Сумма</th>
+          <th style="text-align:left;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;">Дата</th>
+          <th style="text-align:center;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;">Статус</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody">
+        <tr><td colspan="5" style="padding:50px 20px;text-align:center;color:var(--text3);">
+          <div style="font-size:38px;margin-bottom:12px">📭</div>
+          <div style="font-size:14px;margin-bottom:4px;color:var(--text2)">История операций пуста</div>
+          <div style="font-size:12px">Совершите первую операцию — она появится здесь</div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div><div class="page-title">Настройки аккаунта</div><div class="page-subtitle">Профиль, безопасность и предпочтения</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- Профиль -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <div style="font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px">👤 Личные данные</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <div id="settingsAvatar" style="width:60px;height:60px;border-radius:50%;background:var(--accent3);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--accent2);font-family:'Space Mono',monospace;">?</div>
+        <div>
+          <div id="settingsUsername" style="font-size:16px;font-weight:600;">—</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">Участник Kriptex</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Имя пользователя</div>
+        <input class="form-input" type="text" id="settingsDisplayName" placeholder="Ваше имя" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Электронная почта</div>
+        <input class="form-input" type="email" id="settingsEmail" placeholder="example@mail.com" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Номер телефона</div>
+        <input class="form-input" type="tel" id="settingsPhone" placeholder="+7 999 000 00 00" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Страна</div>
+        <select class="form-input" id="settingsCountry" style="cursor:pointer;font-family:'DM Sans',sans-serif">
+          <option>Россия</option>
+          <option>Украина</option>
+          <option>Беларусь</option>
+          <option>Казахстан</option>
+          <option>Эстония</option>
+          <option>Германия</option>
+          <option>Другое</option>
+        </select>
+      </div>
+      <button class="submit-btn buy" style="background:var(--accent);margin-top:6px" onclick="saveProfileSettings()">💾 Сохранить профиль</button>
+    </div>
+
+    <!-- Безопасность -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <div style="font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px">🔐 Безопасность</div>
+      <div class="form-row">
+        <div class="form-label">Текущий пароль</div>
+        <input class="form-input" type="password" id="settingsOldPass" placeholder="••••••••" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Новый пароль</div>
+        <input class="form-input" type="password" id="settingsNewPass" placeholder="Минимум 6 символов" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Повторите пароль</div>
+        <input class="form-input" type="password" id="settingsNewPass2" placeholder="Повторите пароль" style="font-family:'DM Sans',sans-serif">
+      </div>
+      <button class="submit-btn buy" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);margin-bottom:14px" onclick="changePassword()">🔑 Сменить пароль</button>
+
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px">
+        <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Дополнительно</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:var(--radius2);margin-bottom:8px">
+          <div>
+            <div style="font-size:13px;font-weight:500">Двухфакторная аутентификация</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Дополнительная защита аккаунта</div>
+          </div>
+          <span style="background:var(--gold2);color:var(--gold);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">Скоро</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:var(--radius2)">
+          <div>
+            <div style="font-size:13px;font-weight:500">Email-уведомления</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">О входах и операциях</div>
+          </div>
+          <div onclick="this.classList.toggle('on');this.style.background=this.classList.contains('on')?'var(--accent)':'var(--bg4)';this.children[0].style.left=this.classList.contains('on')?'':'3px';this.children[0].style.right=this.classList.contains('on')?'3px':''" style="width:40px;height:22px;border-radius:11px;background:var(--accent);position:relative;cursor:pointer;transition:.2s" class="on">
+            <div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;right:3px;top:3px;transition:.2s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Сессия и аккаунт -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;grid-column:1/-1">
+      <div style="font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px">🖥️ Сессии и аккаунт</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:center">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:13px;font-weight:500">Текущая сессия</div>
+            <span style="background:var(--green2);color:var(--green);padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600">● Активна</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2)">Этот браузер · IP скрыт · Вход выполнен сейчас</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="submit-btn sell" onclick="doLogout()">🚪 Выйти из аккаунта</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+</div><!-- /mainApp -->
+
+
+<!-- ADMIN PANEL -->
+<div id="adminOverlay">
+  <div id="adminAuthBox" style="background:#0d1020;border:1px solid rgba(255,77,106,.35);border-radius:16px;padding:40px 36px;width:400px;max-width:95vw">
+    <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:#ff4d6a;text-align:center;margin-bottom:4px">⚠ KRIPTEX ADMIN</div>
+    <div style="text-align:center;font-size:12px;color:#555a7a;margin-bottom:24px">Доступ строго ограничен. Только для администратора.</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:#555a7a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Логин администратора</div>
+      <input class="admin-input" type="text" id="adminLoginInput" placeholder="admin login" autocomplete="off" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:10px;color:#555a7a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Пароль</div>
+      <input class="admin-input" type="password" id="adminPassInput" placeholder="••••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <div id="adminAuthErr" style="display:none;color:#ff4d6a;font-size:12px;margin-bottom:10px;text-align:center;background:rgba(255,77,106,.1);padding:8px;border-radius:6px"></div>
+    <button onclick="doAdminLogin()" style="width:100%;padding:12px;background:rgba(255,77,106,.15);border:1px solid rgba(255,77,106,.4);border-radius:8px;color:#ff4d6a;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">🔐 Войти в панель</button>
+    <button onclick="closeAdmin()" style="width:100%;padding:8px;background:transparent;border:none;color:#555a7a;font-size:12px;cursor:pointer">Отмена</button>
+  </div>
+
+  <div id="adminPanel" style="display:none;width:1100px;max-width:98vw;max-height:94vh;background:#080c18;border:1px solid rgba(255,77,106,.2);border-radius:16px;overflow:hidden;flex-direction:column">
+    <div style="background:#0d1020;border-bottom:1px solid rgba(255,77,106,.2);padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <span style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:#ff4d6a">⚙ KRIPTEX ADMIN</span>
+      <span style="background:rgba(255,77,106,.12);border:1px solid rgba(255,77,106,.3);color:#ff4d6a;font-size:10px;padding:2px 8px;border-radius:4px;font-family:'Space Mono',monospace">SUPERADMIN</span>
+      <span style="font-size:11px;color:#555a7a;font-family:'Space Mono',monospace" id="adminClock"></span>
+      <div style="display:flex;gap:4px;margin-left:8px;flex-wrap:wrap">
+        <div class="admin-nav-item active" onclick="switchAdminTab('dashboard',this)">📊 Dashboard</div>
+        <div class="admin-nav-item" onclick="switchAdminTab('mm',this)">💹 Market Maker</div>
+        <div class="admin-nav-item" onclick="switchAdminTab('users',this)">👥 Юзеры</div>
+        <div class="admin-nav-item" onclick="switchAdminTab('wallets',this)">🔑 Кошельки</div>
+        <div class="admin-nav-item" onclick="switchAdminTab('site',this)">🌐 Сайт</div>
+        <div class="admin-nav-item" onclick="switchAdminTab('log',this)">📋 Лог</div>
+      </div>
+      <button onclick="closeAdmin()" style="margin-left:auto;background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.3);border-radius:6px;color:#ff4d6a;padding:5px 12px;cursor:pointer;font-size:13px">✕ Закрыть</button>
+    </div>
+
+    <div style="overflow-y:auto;padding:20px;flex:1">
+
+      <div class="admin-section active" id="atab-dashboard">
+        <h3>📊 Обзор системы</h3>
+        <div class="admin-stat-row">
+          <div class="admin-stat"><div class="val" id="adm-users">0</div><div class="lbl">Пользователей</div></div>
+          <div class="admin-stat"><div class="val" style="color:#00d68f">ВКЛ</div><div class="lbl">Market Maker</div></div>
+          <div class="admin-stat"><div class="val" id="adm-btc">$82,511</div><div class="lbl">BTC цена</div></div>
+          <div class="admin-stat"><div class="val" id="adm-xmr">$258</div><div class="lbl">XMR цена</div></div>
+        </div>
+        <div class="admin-card">
+          <label style="font-size:12px;color:#555a7a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:10px">⚡ Быстрые действия — Market Maker</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="admin-btn success" onclick="adminQuickPump('BTC',3)">▲ BTC +3%</button>
+            <button class="admin-btn danger" onclick="adminQuickPump('BTC',-3)">▼ BTC -3%</button>
+            <button class="admin-btn success" onclick="adminQuickPump('ETH',3)">▲ ETH +3%</button>
+            <button class="admin-btn danger" onclick="adminQuickPump('ETH',-3)">▼ ETH -3%</button>
+            <button class="admin-btn success" onclick="adminQuickPump('XMR',5)">▲ XMR +5%</button>
+            <button class="admin-btn danger" onclick="adminQuickPump('XMR',-5)">▼ XMR -5%</button>
+            <button class="admin-btn success" onclick="adminQuickPump('SOL',5)">▲ SOL +5%</button>
+            <button class="admin-btn primary" onclick="refreshAdminDashboard()">🔄 Обновить</button>
+          </div>
+        </div>
+        <div class="admin-card">
+          <label style="font-size:12px;color:#555a7a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:8px">📋 Последние события</label>
+          <div id="adminLogDash" style="max-height:160px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <div class="admin-section" id="atab-mm">
+        <h3>💹 Market Maker — Управление ценами</h3>
+        <div style="background:rgba(245,195,66,.08);border:1px solid rgba(245,195,66,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f5c342;margin-bottom:14px">⚠ Изменения применяются мгновенно и видны всем пользователям.</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#f7931a">₿</span> Bitcoin (BTC)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-btc-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_BTC" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('BTC',1)">+1%</button>
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('BTC',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('BTC',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:1;padding:6px" onclick="adminSetPrice('BTC')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#627eea">Ξ</span> Ethereum (ETH)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-eth-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_ETH" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('ETH',1)">+1%</button>
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('ETH',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('ETH',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:1;padding:6px" onclick="adminSetPrice('ETH')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#ff6600">⬤</span> Monero (XMR)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-xmr-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_XMR" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('XMR',5)">+5%</button>
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('XMR',10)">+10%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('XMR',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:1;padding:6px" onclick="adminSetPrice('XMR')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#9945ff">◎</span> Solana (SOL)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-sol-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_SOL" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('SOL',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('SOL',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:2;padding:6px" onclick="adminSetPrice('SOL')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#f3ba2f">⬤</span> BNB</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-bnb-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_BNB" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('BNB',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('BNB',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:2;padding:6px" onclick="adminSetPrice('BNB')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#0098ea">◎</span> Toncoin (TON)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-ton-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_TON" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('TON',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('TON',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:2;padding:6px" onclick="adminSetPrice('TON')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#bfbbbb">Ł</span> Litecoin (LTC)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-ltc-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_LTC" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('LTC',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('LTC',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:2;padding:6px" onclick="adminSetPrice('LTC')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="color:#ff0013">⬤</span> TRON (TRX)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:#fff;margin-bottom:8px" id="mm-trx-price">—</div>
+            <input class="admin-input" type="number" id="adminPriceInput_TRX" placeholder="Новая цена USD">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="admin-btn success" style="flex:1;padding:6px" onclick="adminQuickPump('TRX',5)">+5%</button>
+              <button class="admin-btn danger" style="flex:1;padding:6px" onclick="adminQuickPump('TRX',-5)">-5%</button>
+              <button class="admin-btn primary" style="flex:2;padding:6px" onclick="adminSetPrice('TRX')">✓ SET</button>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px">📉 Волатильность стакана</div>
+            <input type="range" class="mm-slider" min="1" max="50" value="10" oninput="document.getElementById('volDisplay').textContent=this.value+'%'">
+            <div style="font-size:12px;color:#555a7a">Текущий уровень: <strong style="color:#fff" id="volDisplay">10%</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section" id="atab-users">
+        <h3>👥 Управление пользователями</h3>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="admin-btn primary" onclick="refreshAdminUsers()">🔄 Обновить список</button>
+          <button class="admin-btn success" onclick="adminExportUsers()">⬇ Экспорт JSON</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table" style="min-width:700px">
+            <thead><tr><th>Логин</th><th>Email</th><th>Баланс USDT</th><th>KYC</th><th>Дата</th><th>Действия</th></tr></thead>
+            <tbody id="adminUserTable"><tr><td colspan="6" style="text-align:center;color:#555a7a;padding:20px">Нажмите «Обновить»</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-section" id="atab-wallets">
+        <h3>🔑 Адреса кошельков для пополнения</h3>
+        <div style="background:rgba(91,110,245,.08);border:1px solid rgba(91,110,245,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#7c8ff7;margin-bottom:14px">💡 Введите ваши реальные адреса кошельков. После сохранения они сразу появятся в разделе «Пополнение».</div>
+        <div class="admin-card">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="addr-row"><span class="addr-label">BTC</span><input class="addr-input" id="wadmin_BTC" placeholder="Bitcoin адрес (bc1... или 1...)"></div>
+            <div class="addr-row"><span class="addr-label">ETH</span><input class="addr-input" id="wadmin_ETH" placeholder="Ethereum адрес (0x...)"></div>
+            <div class="addr-row"><span class="addr-label">USDT TRC-20</span><input class="addr-input" id="wadmin_USDT_TRC20" placeholder="TRON адрес (T...)"></div>
+            <div class="addr-row"><span class="addr-label">USDT ERC-20</span><input class="addr-input" id="wadmin_USDT_ERC20" placeholder="Ethereum адрес (0x...)"></div>
+            <div class="addr-row"><span class="addr-label">SOL</span><input class="addr-input" id="wadmin_SOL" placeholder="Solana адрес"></div>
+            <div class="addr-row"><span class="addr-label">TRX</span><input class="addr-input" id="wadmin_TRX" placeholder="TRON адрес (T...)"></div>
+            <div class="addr-row"><span class="addr-label">LTC</span><input class="addr-input" id="wadmin_LTC" placeholder="Litecoin адрес"></div>
+            <div class="addr-row"><span class="addr-label">XMR</span><input class="addr-input" id="wadmin_XMR" placeholder="Monero адрес (4...)"></div>
+          </div>
+          <button class="admin-btn success" style="margin-top:14px;padding:10px 24px" onclick="adminSaveAddresses()">💾 Сохранить все адреса</button>
+        </div>
+      </div>
+
+      <div class="admin-section" id="atab-site">
+        <h3>🌐 Настройки сайта</h3>
+        <div class="admin-card">
+          <label style="font-size:12px;color:#555a7a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:10px">Общие настройки</label>
+          <div style="margin-bottom:10px"><div style="font-size:11px;color:#555a7a;margin-bottom:4px">Название биржи</div><input class="admin-input" id="adminSiteName" value="Kriptex"></div>
+          <div style="margin-bottom:10px"><div style="font-size:11px;color:#555a7a;margin-bottom:4px">Email поддержки</div><input class="admin-input" id="adminEmail" value="support@kriptex.io"></div>
+          <button class="admin-btn primary" onclick="adminSaveSiteSettings()">💾 Сохранить настройки</button>
+        </div>
+      </div>
+
+      <div class="admin-section" id="atab-log">
+        <h3>📋 Системный журнал</h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="admin-btn primary" onclick="refreshAdminLog()">🔄 Обновить</button>
+          <button class="admin-btn danger" onclick="adminLogEntries=[];refreshAdminLog()">🗑 Очистить лог</button>
+        </div>
+        <div id="adminLogFull" style="background:#060810;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;max-height:400px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:11px"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// REAL PRICES (April 17, 2026 00:00) × 1.10 (Kriptex premium +10%)
+const MARKET_PRICES = {
+  BTC:82511,ETH:1843,USDT:1.10,BNB:605,SOL:133,USDC:1.10,XRP:2.31,
+  DOGE:0.1876,TON:3.96,ADA:0.8316,TRX:0.2497,AVAX:19.69,SHIB:0.00001342,
+  DOT:4.07,LINK:12.76,LTC:88.11,BCH:303.6,XMR:258.5,UNI:5.434,ATOM:4.488,
+  ETC:17.27,XLM:0.2849,FIL:2.838,ICP:5.313,HBAR:0.1793,APT:4.466,
+  ARB:0.3267,OP:0.6413,NEAR:2.387,VET:0.02497,MATIC:0.2156,MKR:1287,
+  GRT:0.09812,AAVE:137.7,ALGO:0.1892,SAND:0.2651,MANA:0.2585,CRO:0.09064,
+  INJ:8.217,STX:0.7843,IMX:0.5368,RUNE:1.584,KAS:0.09669,FTM:0.6743,
+  TIA:2.695,SEI:0.2178,SUI:2.167,PEPE:0.000007271,WIF:0.8712,
+  JUP:0.4026,BONK:0.00001419,PYTH:0.1815,FLOKI:0.0000862,CFX:0.09108,
+  EOS:0.5698,XTZ:0.6105,THETA:0.8602,AGIX:0.3399,FET:0.7018,OCEAN:0.4048,
+  QNT:56.43,IOTA:0.2249,ZIL:0.01386,NEO:7.645,DASH:19.53,ZEC:24.42,
+  GALA:0.01485,CHZ:0.05610,ENJ:0.09834,BAT:0.1254,COMP:38.94,CRV:0.3498,
+  SNX:0.9405,SUSHI:0.6634,YFI:4389,BAL:1.386,LUNC:0.00006765,LDO:0.7018,
+  RPL:6.457,GMX:14.08,DYDX:0.6182,BLUR:0.07447,ENS:14.63,PENDLE:2.739,
+  ORDI:20.35,STRK:0.2299,W:0.2321,JTO:1.419,ONDO:0.7777,ENA:0.3080,
+  ALT:0.05478,MANTA:0.3564,ZK:0.05753,PORTAL:0.2090,PIXEL:0.04741,
+  MEME:0.004686,SAGA:0.3740,REZ:0.03828,NOT:0.004048,'1INCH':0.1991
+};
+
+const COINS=[
+ {rank:1,sym:'BTC',name:'Bitcoin',color:'#f7931a',bg:'#f7931a22',chg:2.34,vol:'$38.2B',tags:['top10'],sparkDir:1},
+ {rank:2,sym:'ETH',name:'Ethereum',color:'#627eea',bg:'#627eea22',chg:3.12,vol:'$18.4B',tags:['top10','defi'],sparkDir:1},
+ {rank:3,sym:'USDT',name:'Tether',color:'#26a17b',bg:'#26a17b22',chg:0.01,vol:'$42.1B',tags:['top10','stablecoins'],sparkDir:0},
+ {rank:4,sym:'BNB',name:'BNB',color:'#f3ba2f',bg:'#f3ba2f22',chg:1.87,vol:'$2.1B',tags:['top10'],sparkDir:1},
+ {rank:5,sym:'SOL',name:'Solana',color:'#9945ff',bg:'#9945ff22',chg:4.56,vol:'$4.8B',tags:['top10'],sparkDir:1},
+ {rank:6,sym:'USDC',name:'USD Coin',color:'#2775ca',bg:'#2775ca22',chg:0.00,vol:'$7.2B',tags:['top10','stablecoins'],sparkDir:0},
+ {rank:7,sym:'XRP',name:'XRP',color:'#00aae4',bg:'#00aae422',chg:-1.23,vol:'$1.8B',tags:['top10'],sparkDir:-1},
+ {rank:8,sym:'DOGE',name:'Dogecoin',color:'#c2a633',bg:'#c2a63322',chg:5.78,vol:'$1.4B',tags:['top10'],sparkDir:1},
+ {rank:9,sym:'TON',name:'Toncoin',color:'#0098ea',bg:'#0098ea22',chg:2.10,vol:'$432M',tags:['top10'],sparkDir:1},
+ {rank:10,sym:'ADA',name:'Cardano',color:'#3cc8c8',bg:'#3cc8c822',chg:-0.87,vol:'$420M',tags:['top10'],sparkDir:-1},
+ {rank:11,sym:'TRX',name:'TRON',color:'#ff0013',bg:'#ff001322',chg:1.45,vol:'$380M',tags:[],sparkDir:1},
+ {rank:12,sym:'AVAX',name:'Avalanche',color:'#e84142',bg:'#e8414222',chg:3.44,vol:'$620M',tags:['defi'],sparkDir:1},
+ {rank:13,sym:'SHIB',name:'Shiba Inu',color:'#ff6b00',bg:'#ff6b0022',chg:6.34,vol:'$520M',tags:[],sparkDir:1},
+ {rank:14,sym:'DOT',name:'Polkadot',color:'#e6007a',bg:'#e6007a22',chg:-1.56,vol:'$210M',tags:['defi'],sparkDir:-1},
+ {rank:15,sym:'LINK',name:'Chainlink',color:'#2a5ada',bg:'#2a5ada22',chg:2.87,vol:'$540M',tags:['defi'],sparkDir:1},
+ {rank:16,sym:'LTC',name:'Litecoin',color:'#bfbbbb',bg:'#bfbbbb22',chg:1.12,vol:'$460M',tags:[],sparkDir:1},
+ {rank:17,sym:'BCH',name:'Bitcoin Cash',color:'#8dc351',bg:'#8dc35122',chg:-2.34,vol:'$340M',tags:[],sparkDir:-1},
+ {rank:18,sym:'XMR',name:'Monero',color:'#ff6600',bg:'#ff660022',chg:0.92,vol:'$120M',tags:[],sparkDir:1},
+ {rank:19,sym:'UNI',name:'Uniswap',color:'#ff007a',bg:'#ff007a22',chg:3.21,vol:'$180M',tags:['defi'],sparkDir:1},
+ {rank:20,sym:'ATOM',name:'Cosmos',color:'#6f7390',bg:'#6f739022',chg:-0.44,vol:'$210M',tags:['defi'],sparkDir:-1},
+ {rank:21,sym:'ETC',name:'Ethereum Classic',color:'#328332',bg:'#32833222',chg:1.34,vol:'$140M',tags:[],sparkDir:1},
+ {rank:22,sym:'XLM',name:'Stellar',color:'#7d7ded',bg:'#7d7ded22',chg:-0.72,vol:'$90M',tags:[],sparkDir:-1},
+ {rank:23,sym:'FIL',name:'Filecoin',color:'#0090ff',bg:'#0090ff22',chg:2.14,vol:'$160M',tags:[],sparkDir:1},
+ {rank:24,sym:'ICP',name:'Internet Computer',color:'#29abe2',bg:'#29abe222',chg:4.28,vol:'$140M',tags:[],sparkDir:1},
+ {rank:25,sym:'HBAR',name:'Hedera',color:'#00b6c2',bg:'#00b6c222',chg:1.84,vol:'$120M',tags:[],sparkDir:1},
+ {rank:26,sym:'APT',name:'Aptos',color:'#07e38f',bg:'#07e38f22',chg:3.67,vol:'$210M',tags:[],sparkDir:1},
+ {rank:27,sym:'ARB',name:'Arbitrum',color:'#28a0f0',bg:'#28a0f022',chg:-1.84,vol:'$390M',tags:['defi'],sparkDir:-1},
+ {rank:28,sym:'OP',name:'Optimism',color:'#ff0420',bg:'#ff042022',chg:2.44,vol:'$280M',tags:['defi'],sparkDir:1},
+ {rank:29,sym:'NEAR',name:'NEAR Protocol',color:'#00c08b',bg:'#00c08b22',chg:5.12,vol:'$340M',tags:['defi'],sparkDir:1},
+ {rank:30,sym:'VET',name:'VeChain',color:'#15bdff',bg:'#15bdff22',chg:-0.34,vol:'$80M',tags:[],sparkDir:-1},
+ {rank:31,sym:'MATIC',name:'Polygon',color:'#8247e5',bg:'#8247e522',chg:-2.14,vol:'$540M',tags:['defi'],sparkDir:-1},
+ {rank:32,sym:'MKR',name:'Maker',color:'#1aab9b',bg:'#1aab9b22',chg:1.24,vol:'$120M',tags:['defi'],sparkDir:1},
+ {rank:33,sym:'GRT',name:'The Graph',color:'#6747ed',bg:'#6747ed22',chg:3.84,vol:'$100M',tags:['defi'],sparkDir:1},
+ {rank:34,sym:'AAVE',name:'Aave',color:'#b6509e',bg:'#b6509e22',chg:2.84,vol:'$180M',tags:['defi'],sparkDir:1},
+ {rank:35,sym:'ALGO',name:'Algorand',color:'#aaaaaa',bg:'#aaaaaa22',chg:-1.24,vol:'$60M',tags:[],sparkDir:-1},
+ {rank:36,sym:'SAND',name:'The Sandbox',color:'#04adef',bg:'#04adef22',chg:4.24,vol:'$120M',tags:[],sparkDir:1},
+ {rank:37,sym:'MANA',name:'Decentraland',color:'#ff2d55',bg:'#ff2d5522',chg:5.14,vol:'$110M',tags:[],sparkDir:1},
+ {rank:38,sym:'CRO',name:'Cronos',color:'#1a6eb5',bg:'#1a6eb522',chg:0.84,vol:'$50M',tags:[],sparkDir:1},
+ {rank:39,sym:'INJ',name:'Injective',color:'#00b2ff',bg:'#00b2ff22',chg:6.84,vol:'$280M',tags:['defi'],sparkDir:1},
+ {rank:40,sym:'STX',name:'Stacks',color:'#5546ff',bg:'#5546ff22',chg:8.24,vol:'$120M',tags:[],sparkDir:1},
+ {rank:41,sym:'IMX',name:'Immutable',color:'#17b5cb',bg:'#17b5cb22',chg:3.14,vol:'$90M',tags:[],sparkDir:1},
+ {rank:42,sym:'RUNE',name:'THORChain',color:'#33ff99',bg:'#33ff9922',chg:7.24,vol:'$120M',tags:['defi'],sparkDir:1},
+ {rank:43,sym:'KAS',name:'Kaspa',color:'#49deb7',bg:'#49deb722',chg:2.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:44,sym:'FTM',name:'Fantom',color:'#1969ff',bg:'#1969ff22',chg:4.84,vol:'$180M',tags:['defi'],sparkDir:1},
+ {rank:45,sym:'TIA',name:'Celestia',color:'#7b2bf9',bg:'#7b2bf922',chg:-3.14,vol:'$180M',tags:[],sparkDir:-1},
+ {rank:46,sym:'SEI',name:'Sei',color:'#9d1c1c',bg:'#9d1c1c22',chg:5.84,vol:'$140M',tags:[],sparkDir:1},
+ {rank:47,sym:'SUI',name:'Sui',color:'#6fbcf0',bg:'#6fbcf022',chg:7.24,vol:'$380M',tags:[],sparkDir:1},
+ {rank:48,sym:'PEPE',name:'Pepe',color:'#479a3f',bg:'#479a3f22',chg:12.84,vol:'$940M',tags:[],sparkDir:1},
+ {rank:49,sym:'WIF',name:'dogwifhat',color:'#c45fa0',bg:'#c45fa022',chg:9.14,vol:'$420M',tags:[],sparkDir:1},
+ {rank:50,sym:'JUP',name:'Jupiter',color:'#c7b300',bg:'#c7b30022',chg:4.24,vol:'$180M',tags:['defi'],sparkDir:1},
+ {rank:51,sym:'BONK',name:'Bonk',color:'#f3784c',bg:'#f3784c22',chg:15.4,vol:'$280M',tags:[],sparkDir:1},
+ {rank:52,sym:'PYTH',name:'Pyth Network',color:'#5b2fc9',bg:'#5b2fc922',chg:3.84,vol:'$120M',tags:['defi'],sparkDir:1},
+ {rank:53,sym:'FLOKI',name:'FLOKI',color:'#f0a500',bg:'#f0a50022',chg:8.24,vol:'$180M',tags:[],sparkDir:1},
+ {rank:54,sym:'CFX',name:'Conflux',color:'#12b4f5',bg:'#12b4f522',chg:-1.84,vol:'$80M',tags:[],sparkDir:-1},
+ {rank:55,sym:'EOS',name:'EOS',color:'#888888',bg:'#88888822',chg:0.44,vol:'$60M',tags:[],sparkDir:1},
+ {rank:56,sym:'XTZ',name:'Tezos',color:'#2c7df7',bg:'#2c7df722',chg:-0.84,vol:'$40M',tags:[],sparkDir:-1},
+ {rank:57,sym:'THETA',name:'Theta Network',color:'#2ab8e6',bg:'#2ab8e622',chg:2.14,vol:'$80M',tags:[],sparkDir:1},
+ {rank:58,sym:'AGIX',name:'SingularityNET',color:'#5e40db',bg:'#5e40db22',chg:5.84,vol:'$120M',tags:[],sparkDir:1},
+ {rank:59,sym:'FET',name:'Fetch.ai',color:'#4b8aee',bg:'#4b8aee22',chg:7.84,vol:'$180M',tags:[],sparkDir:1},
+ {rank:60,sym:'OCEAN',name:'Ocean Protocol',color:'#2e86c1',bg:'#2e86c122',chg:4.24,vol:'$80M',tags:['defi'],sparkDir:1},
+ {rank:61,sym:'QNT',name:'Quant',color:'#0d4f8c',bg:'#0d4f8c22',chg:-0.74,vol:'$40M',tags:[],sparkDir:-1},
+ {rank:62,sym:'IOTA',name:'IOTA',color:'#aaaaaa',bg:'#aaaaaa22',chg:1.24,vol:'$30M',tags:[],sparkDir:1},
+ {rank:63,sym:'ZIL',name:'Zilliqa',color:'#49d1cc',bg:'#49d1cc22',chg:3.84,vol:'$40M',tags:[],sparkDir:1},
+ {rank:64,sym:'NEO',name:'NEO',color:'#58bf00',bg:'#58bf0022',chg:-1.34,vol:'$60M',tags:[],sparkDir:-1},
+ {rank:65,sym:'DASH',name:'Dash',color:'#008de4',bg:'#008de422',chg:0.84,vol:'$50M',tags:[],sparkDir:1},
+ {rank:66,sym:'ZEC',name:'Zcash',color:'#ecb244',bg:'#ecb24422',chg:-2.14,vol:'$30M',tags:[],sparkDir:-1},
+ {rank:67,sym:'GALA',name:'Gala',color:'#ff8a44',bg:'#ff8a4422',chg:6.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:68,sym:'CHZ',name:'Chiliz',color:'#cd0124',bg:'#cd012422',chg:2.84,vol:'$60M',tags:[],sparkDir:1},
+ {rank:69,sym:'ENJ',name:'Enjin Coin',color:'#7866d5',bg:'#7866d522',chg:-0.84,vol:'$20M',tags:[],sparkDir:-1},
+ {rank:70,sym:'BAT',name:'Basic Attention',color:'#ff5000',bg:'#ff500022',chg:1.84,vol:'$30M',tags:['defi'],sparkDir:1},
+ {rank:71,sym:'COMP',name:'Compound',color:'#00d395',bg:'#00d39522',chg:2.44,vol:'$60M',tags:['defi'],sparkDir:1},
+ {rank:72,sym:'CRV',name:'Curve DAO',color:'#40649f',bg:'#40649f22',chg:-1.84,vol:'$80M',tags:['defi'],sparkDir:-1},
+ {rank:73,sym:'SNX',name:'Synthetix',color:'#00d1ff',bg:'#00d1ff22',chg:4.84,vol:'$60M',tags:['defi'],sparkDir:1},
+ {rank:74,sym:'SUSHI',name:'SushiSwap',color:'#fa52a0',bg:'#fa52a022',chg:5.84,vol:'$60M',tags:['defi'],sparkDir:1},
+ {rank:75,sym:'YFI',name:'yearn.finance',color:'#006ae3',bg:'#006ae322',chg:3.24,vol:'$40M',tags:['defi'],sparkDir:1},
+ {rank:76,sym:'BAL',name:'Balancer',color:'#888',bg:'#88888822',chg:2.14,vol:'$20M',tags:['defi'],sparkDir:1},
+ {rank:77,sym:'LUNC',name:'Terra Classic',color:'#4a6fa5',bg:'#4a6fa522',chg:4.84,vol:'$60M',tags:[],sparkDir:1},
+ {rank:78,sym:'LDO',name:'Lido DAO',color:'#00a3ff',bg:'#00a3ff22',chg:1.84,vol:'$80M',tags:['defi'],sparkDir:1},
+ {rank:79,sym:'RPL',name:'Rocket Pool',color:'#ff6b00',bg:'#ff6b0022',chg:2.84,vol:'$20M',tags:['defi'],sparkDir:1},
+ {rank:80,sym:'GMX',name:'GMX',color:'#2d42fc',bg:'#2d42fc22',chg:4.84,vol:'$40M',tags:['defi'],sparkDir:1},
+ {rank:81,sym:'DYDX',name:'dYdX',color:'#6966ff',bg:'#6966ff22',chg:3.84,vol:'$60M',tags:['defi'],sparkDir:1},
+ {rank:82,sym:'BLUR',name:'Blur',color:'#ff8700',bg:'#ff870022',chg:6.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:83,sym:'ENS',name:'ENS',color:'#5298ff',bg:'#5298ff22',chg:2.84,vol:'$30M',tags:[],sparkDir:1},
+ {rank:84,sym:'PENDLE',name:'Pendle',color:'#3bbed9',bg:'#3bbed922',chg:8.84,vol:'$80M',tags:['defi'],sparkDir:1},
+ {rank:85,sym:'ORDI',name:'ORDI',color:'#ff9500',bg:'#ff950022',chg:5.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:86,sym:'STRK',name:'Starknet',color:'#ec796b',bg:'#ec796b22',chg:-2.84,vol:'$60M',tags:[],sparkDir:-1},
+ {rank:87,sym:'W',name:'Wormhole',color:'#6e70f2',bg:'#6e70f222',chg:4.84,vol:'$60M',tags:[],sparkDir:1},
+ {rank:88,sym:'JTO',name:'Jito',color:'#01e9ac',bg:'#01e9ac22',chg:3.84,vol:'$40M',tags:['defi'],sparkDir:1},
+ {rank:89,sym:'ONDO',name:'Ondo',color:'#1a6aff',bg:'#1a6aff22',chg:6.84,vol:'$80M',tags:['defi'],sparkDir:1},
+ {rank:90,sym:'ENA',name:'Ethena',color:'#9d4dbb',bg:'#9d4dbb22',chg:7.84,vol:'$80M',tags:['defi'],sparkDir:1},
+ {rank:91,sym:'ALT',name:'AltLayer',color:'#18d8c0',bg:'#18d8c022',chg:5.84,vol:'$60M',tags:[],sparkDir:1},
+ {rank:92,sym:'MANTA',name:'Manta Network',color:'#5a68f6',bg:'#5a68f622',chg:-3.84,vol:'$60M',tags:[],sparkDir:-1},
+ {rank:93,sym:'ZK',name:'ZKsync',color:'#8b5cf6',bg:'#8b5cf622',chg:4.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:94,sym:'PORTAL',name:'Portal',color:'#7b39e0',bg:'#7b39e022',chg:9.84,vol:'$60M',tags:[],sparkDir:1},
+ {rank:95,sym:'PIXEL',name:'Pixels',color:'#e040fb',bg:'#e040fb22',chg:12.4,vol:'$80M',tags:[],sparkDir:1},
+ {rank:96,sym:'MEME',name:'Memecoin',color:'#ffcd00',bg:'#ffcd0022',chg:18.4,vol:'$80M',tags:[],sparkDir:1},
+ {rank:97,sym:'SAGA',name:'Saga',color:'#6b82a6',bg:'#6b82a622',chg:-1.84,vol:'$60M',tags:[],sparkDir:-1},
+ {rank:98,sym:'REZ',name:'Renzo',color:'#8b5cf6',bg:'#8b5cf622',chg:6.84,vol:'$80M',tags:[],sparkDir:1},
+ {rank:99,sym:'NOT',name:'Notcoin',color:'#f5cd00',bg:'#f5cd0022',chg:14.84,vol:'$180M',tags:[],sparkDir:1},
+ {rank:100,sym:'1INCH',name:'1inch',color:'#94a3b8',bg:'#94a3b822',chg:3.14,vol:'$50M',tags:['defi'],sparkDir:1},
+];
+
+COINS.forEach(c=>{ c.price = MARKET_PRICES[c.sym] || 1.0; });
+
+// AUTH
+let currentUser = null;
+function getUsers(){ try{return JSON.parse(localStorage.getItem('kx_users')||'{}')}catch(e){return{}} }
+function saveUsers(u){ localStorage.setItem('kx_users',JSON.stringify(u)); }
+function getUserData(uname){ const u=getUsers(); return u[uname]||null; }
+function saveUserData(uname,data){ const u=getUsers(); u[uname]=data; saveUsers(u); }
+
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
+  document.getElementById('loginForm').style.display = tab==='login'?'flex':'none';
+  document.getElementById('registerForm').style.display = tab==='register'?'flex':'none';
+  document.getElementById('authError').style.display='none';
+}
+function showAuthError(msg){ const el=document.getElementById('authError'); el.textContent=msg; el.style.display='block'; }
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(!u||!p){ showAuthError('Введите логин и пароль'); return; }
+  const users=getUsers();
+  if(!users[u]){ showAuthError('Пользователь не найден'); return; }
+  if(users[u].password!==btoa(p)){ showAuthError('Неверный пароль'); return; }
+  loginSuccess(u);
+}
+function doRegister(){
+  const u=document.getElementById('regUser').value.trim();
+  const p=document.getElementById('regPass').value;
+  const p2=document.getElementById('regPass2').value;
+  if(u.length<4){ showAuthError('Логин минимум 4 символа'); return; }
+  if(p.length<6){ showAuthError('Пароль минимум 6 символов'); return; }
+  if(p!==p2){ showAuthError('Пароли не совпадают'); return; }
+  const users=getUsers();
+  if(users[u]){ showAuthError('Логин занят'); return; }
+  users[u]={ password:btoa(p), email:document.getElementById('regEmail').value, balance:0, holdings:{}, depHistory:[], created:new Date().toISOString() };
+  saveUsers(users);
+  showToast('Аккаунт создан! Добро пожаловать, '+u+'!','🎉');
+  loginSuccess(u);
+}
+function showApp(){
+  document.getElementById('landingPage').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('authModal').style.display='none';
+  // Init app after showing
+  setTimeout(()=>{
+    renderCoinTable(COINS);
+    startLiveChart();
+  }, 100);
+}
+function loginSuccess(uname){
+  currentUser=uname;
+  localStorage.setItem('kx_session',uname);
+  showApp();
+  document.getElementById('navUsername').textContent=uname;
+  document.getElementById('navAvatar').textContent=uname[0].toUpperCase();
+  refreshUserUI();
+  showToast('Добро пожаловать, '+uname+'!','👋');
+}
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem('kx_session');
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('landingPage').style.display='block';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  if(chartTimer) clearInterval(chartTimer);
+  if(obTimer) clearInterval(obTimer);
+}
+function refreshUserUI(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser);
+  if(!data) return;
+  const total = data.balance + calcHoldingsValue(data.holdings);
+  document.getElementById('walletTotal').textContent='$'+total.toFixed(2);
+  document.getElementById('sidebalance').textContent='$'+total.toFixed(2);
+  document.getElementById('availBal').textContent=(data.balance).toFixed(2)+' USDT';
+  if(total>0){
+    document.getElementById('walletSub').innerHTML='<span style="color:var(--green)">▲ Активный аккаунт</span>';
+    document.getElementById('sidechange').textContent='USDT: $'+data.balance.toFixed(2);
+    document.getElementById('sidechange').style.color='var(--green)';
+  } else {
+    document.getElementById('walletSub').textContent='Пополните кошелёк чтобы начать торговать';
+    document.getElementById('sidechange').textContent='Пополните кошелёк';
+    document.getElementById('sidechange').style.color='var(--text3)';
+  }
+  renderHoldings(data);
+  renderAllocFromData(data);
+  renderDepHistoryFromData(data);
+}
+function calcHoldingsValue(holdings){
+  let s=0;
+  Object.entries(holdings||{}).forEach(([sym,amt])=>{ s+=amt*(MARKET_PRICES[sym]||1); });
+  return s;
+}
+
+// ================================================================
+// LANDING PAGE & AUTH MODAL
+// ================================================================
+function openAuthModal(tab){
+  const m=document.getElementById('authModal');
+  m.style.display='flex';
+  switchAuthTab(tab||'login');
+  document.getElementById('authError').style.display='none';
+}
+function closeAuthModal(){
+  document.getElementById('authModal').style.display='none';
+}
+
+function buildLandingTicker(){
+  const el=document.getElementById('landingTickerInner');
+  if(!el) return;
+  const top=COINS.slice(0,12);
+  el.innerHTML=top.map(c=>`<span style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text2);margin-right:20px;"><span style="color:var(--text);font-weight:600;font-family:'Space Mono',monospace;font-size:11px">${c.sym}</span><span style="font-family:'Space Mono',monospace" id="ltick-${c.sym}">${fmtPrice(c.price)}</span><span style="color:${c.chg>=0?'var(--green)':'var(--red)'}">${c.chg>=0?'+':''}${c.chg.toFixed(2)}%</span></span>`).join('');
+}
+
+function buildLandingPrices(){
+  const el=document.getElementById('landingPrices');
+  if(!el) return;
+  const top=['BTC','ETH','SOL','XMR','BNB','LTC','TRX','XRP'].map(s=>COINS.find(c=>c.sym===s)).filter(Boolean);
+  el.innerHTML=top.map(c=>`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:12px;text-align:left;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:${c.bg};color:${c.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Space Mono',monospace;">${c.sym.slice(0,3)}</div>
+        <span style="font-size:12px;font-weight:500;">${c.name}</span>
+        <span style="margin-left:auto;font-size:11px;color:${c.chg>=0?'var(--green)':'var(--red)'};">${c.chg>=0?'+':''}${c.chg.toFixed(2)}%</span>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:#fff;" id="lprice-${c.sym}">${fmtPrice(c.price)}</div>
+      <button onclick="openAuthModal('register')" style="width:100%;margin-top:8px;padding:6px;background:var(--accent3);border:1px solid rgba(91,110,245,.3);border-radius:6px;color:var(--accent2);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">Торговать →</button>
+    </div>`).join('');
+}
+
+function buildPhoneMockPrices(){
+  const el=document.getElementById('phoneMockPrices');
+  if(!el) return;
+  const top=COINS.slice(0,4);
+  el.innerHTML=top.map(c=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="width:18px;height:18px;border-radius:50%;background:${c.bg};color:${c.color};display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;font-family:'Space Mono',monospace;">${c.sym.slice(0,2)}</div>
+        <span style="font-size:9px;color:var(--text2);">${c.sym}</span>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;color:#fff;" id="pmock-${c.sym}">${fmtPrice(c.price)}</div>
+        <div style="font-size:8px;color:${c.chg>=0?'var(--green)':'var(--red)'};">${c.chg>=0?'+':''}${c.chg.toFixed(2)}%</div>
+      </div>
+    </div>`).join('');
+}
+
+function updateLandingPrices(){
+  COINS.slice(0,12).forEach(c=>{
+    const el=document.getElementById('ltick-'+c.sym); if(el) el.textContent=fmtPrice(c.price);
+    const el2=document.getElementById('lprice-'+c.sym); if(el2) el2.textContent=fmtPrice(c.price);
+    const el3=document.getElementById('pmock-'+c.sym); if(el3) el3.textContent=fmtPrice(c.price);
+  });
+}
+
+// ================================================================
+// WITHDRAW MODAL
+// ================================================================
+const WD_INFO={
+  BTC:     {network:'Bitcoin Network (BTC)',    fee:'0.0005 BTC', min:'0.001 BTC',  feeUsdt:41.26},
+  ETH:     {network:'Ethereum Network (ERC-20)',fee:'0.005 ETH',  min:'0.01 ETH',   feeUsdt:9.22},
+  USDT_TRC20:{network:'Tron Network (TRC-20)',  fee:'1 USDT',     min:'10 USDT',    feeUsdt:1},
+  USDT_ERC20:{network:'Ethereum (ERC-20)',      fee:'5 USDT',     min:'20 USDT',    feeUsdt:5},
+  SOL:     {network:'Solana Network (SOL)',     fee:'0.01 SOL',   min:'0.1 SOL',    feeUsdt:1.33},
+  TRX:     {network:'Tron Network (TRX)',       fee:'1 TRX',      min:'10 TRX',     feeUsdt:0.25},
+  LTC:     {network:'Litecoin Network (LTC)',   fee:'0.001 LTC',  min:'0.01 LTC',   feeUsdt:0.09},
+  XMR:     {network:'Monero Network (XMR)',     fee:'0.0001 XMR', min:'0.1 XMR',    feeUsdt:0.03},
+  BNB:     {network:'BNB Smart Chain (BSC)',    fee:'0.001 BNB',  min:'0.01 BNB',   feeUsdt:0.61},
+  XRP:     {network:'Ripple Network (XRP)',     fee:'0.25 XRP',   min:'10 XRP',     feeUsdt:0.58},
+};
+
+function openWithdrawModal(){
+  if(!currentUser){ showToast('Войдите в аккаунт','🔐'); return; }
+  const m=document.getElementById('withdrawModal');
+  m.style.display='flex';
+  updateWithdrawInfo();
+  const data=getUserData(currentUser);
+  const avEl=document.getElementById('wdAvail');
+  if(avEl&&data) avEl.textContent=(data.balance||0).toFixed(2)+' USDT';
+  document.getElementById('wdAddress').value='';
+  document.getElementById('wdAmount').value='';
+  document.getElementById('wdReceive').textContent='—';
+}
+function closeWithdrawModal(){
+  document.getElementById('withdrawModal').style.display='none';
+}
+function updateWithdrawInfo(){
+  const sym=document.getElementById('wdCoin')?.value;
+  if(!sym) return;
+  const info=WD_INFO[sym]||{};
+  const netEl=document.getElementById('wdNetwork'); if(netEl) netEl.textContent=info.network||'—';
+  const feeEl=document.getElementById('wdFee'); if(feeEl) feeEl.textContent=info.fee||'—';
+  const minEl=document.getElementById('wdMin'); if(minEl) minEl.textContent=info.min||'—';
+  calcWdReceive();
+}
+function calcWdReceive(){
+  const sym=document.getElementById('wdCoin')?.value;
+  const info=WD_INFO[sym]||{};
+  const amt=parseFloat(document.getElementById('wdAmount')?.value)||0;
+  const receive=Math.max(0, amt-(info.feeUsdt||0));
+  const el=document.getElementById('wdReceive');
+  if(el) el.textContent=receive>0?'$'+receive.toFixed(2)+' USDT':'—';
+}
+function wdSetMax(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser);
+  if(!data) return;
+  const inp=document.getElementById('wdAmount');
+  if(inp){ inp.value=(data.balance||0).toFixed(2); calcWdReceive(); }
+}
+function submitWithdraw(){
+  if(!currentUser){ showToast('Войдите в аккаунт','🔐'); return; }
+  const addr=document.getElementById('wdAddress')?.value.trim();
+  const amt=parseFloat(document.getElementById('wdAmount')?.value)||0;
+  const sym=document.getElementById('wdCoin')?.value;
+  if(!addr){ showToast('Введите адрес получателя','⚠️'); return; }
+  if(!amt||amt<=0){ showToast('Введите сумму вывода','⚠️'); return; }
+  const data=getUserData(currentUser);
+  if(!data) return;
+  const info=WD_INFO[sym]||{};
+  if(data.balance<amt){ showToast('Недостаточно средств на балансе','❌'); return; }
+  if(amt<(info.feeUsdt||0)*2){ showToast('Сумма слишком мала для покрытия комиссии','⚠️'); return; }
+
+  data.balance-=amt;
+  data.tradeHistory=data.tradeHistory||[];
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ru')+' '+now.toTimeString().slice(0,5);
+  const symShort=sym.replace('_TRC20','').replace('_ERC20','');
+  data.tradeHistory.unshift({side:'withdraw',coin:symShort,amount:'$'+amt.toFixed(2)+' USDT',usd:'-$'+amt.toFixed(2),date:dateStr});
+  saveUserData(currentUser,data);
+  refreshUserUI();
+  closeWithdrawModal();
+  showToast(`Заявка на вывод $${amt.toFixed(2)} принята. Обработка до 24ч.`,'✅');
+}
+
+// ================================================================
+// window.onload — show landing first, then app after login
+// ================================================================
+window.addEventListener('load',()=>{
+  loadAdminPrices(); // ← первым делом — загружаем сохранённые цены
+  buildTickerDuplicate();
+  buildLandingTicker();
+  buildLandingPrices();
+  buildPhoneMockPrices();
+  buildTradePairSelect();
+  updateTradeHeader(COINS[0]);
+  updateStatCards();
+  startPriceSimulation();
+  generateQR();
+
+  const sess=localStorage.getItem('kx_session');
+  if(sess && getUserData(sess)){
+    loginSuccess(sess);
+  } else {
+    document.getElementById('landingPage').style.display='block';
+    document.getElementById('mainApp').style.display='none';
+  }
+});
+
+// TICKER
+function buildTickerDuplicate(){
+  const inner=document.getElementById('tickerInner');
+  const top=COINS.slice(0,20);
+  const html=top.map(c=>`<div class="ticker-item"><span class="sym">${c.sym}</span><span class="pr" id="tick-${c.sym}">${fmtPrice(c.price)}</span><span class="ch ${c.chg>=0?'up':'dn'}" id="tickch-${c.sym}">${c.chg>=0?'+':''}${c.chg.toFixed(2)}%</span></div>`).join('');
+  inner.innerHTML=html+html;
+}
+
+function startPriceSimulation(){
+  let saveCounter = 0;
+  setInterval(()=>{
+    COINS.forEach(c=>{
+      if(selectedCoin && c.sym===selectedCoin.sym) return;
+      const move=(Math.random()-0.48)*0.0015;
+      c.price=Math.max(0.0000001,c.price*(1+move));
+      MARKET_PRICES[c.sym]=c.price;
+      const el=document.getElementById('tick-'+c.sym);
+      if(el) el.textContent=fmtPrice(c.price);
+    });
+    updateTablePrices();
+    updateStatCards();
+    updateLandingPrices();
+    if(currentUser) refreshUserUI();
+    // Auto-save prices every 30 ticks (~42 sec) to persist admin changes
+    saveCounter++;
+    if(saveCounter % 30 === 0) saveAdminPrices();
+  },1400);
+}
+function updateStatCards(){
+  const btc=COINS.find(c=>c.sym==='BTC');
+  const eth=COINS.find(c=>c.sym==='ETH');
+  const xmr=COINS.find(c=>c.sym==='XMR');
+  if(btc) document.getElementById('btcStatPrice').textContent=fmtPrice(btc.price);
+  if(eth) document.getElementById('ethStatPrice').textContent=fmtPrice(eth.price);
+  if(xmr) document.getElementById('xmrStatPrice').textContent=fmtPrice(xmr.price);
+}
+function updateTablePrices(){
+  COINS.forEach(c=>{ const el=document.getElementById('tprice-'+c.sym); if(el) el.textContent=fmtPrice(c.price); });
+}
+function fmtPrice(p){
+  if(p>=1000) return '$'+p.toLocaleString('en',{maximumFractionDigits:2,minimumFractionDigits:2});
+  if(p>=1) return '$'+p.toFixed(4);
+  if(p>=0.01) return '$'+p.toFixed(4);
+  if(p>=0.0001) return '$'+p.toFixed(6);
+  return '$'+p.toFixed(8);
+}
+
+let currentFilter='all';
+function renderCoinTable(coins){
+  const body=document.getElementById('coinTableBody');
+  body.innerHTML=coins.map(c=>`<div class="ct-row" onclick="openTrade('${c.sym}')"><div class="rank">${c.rank}</div><div class="coin-info"><div class="coin-icon" style="background:${c.bg};color:${c.color}">${c.sym.slice(0,3)}</div><div><div class="coin-name">${c.name}</div><div class="coin-sym">${c.sym}</div></div></div><div class="ct-val price" id="tprice-${c.sym}">${fmtPrice(c.price)}</div><div class="ct-val ${c.chg>=0?'green':'red'}">${c.chg>=0?'+':''}${c.chg.toFixed(2)}%</div><div class="ct-val muted">${c.vol}</div><div class="ct-val"><canvas class="sparkline" id="spark-${c.sym}"></canvas></div><div class="ct-val"><button class="trade-btn" onclick="event.stopPropagation();openTrade('${c.sym}')">Торговать</button></div></div>`).join('');
+  setTimeout(()=>coins.forEach(c=>drawSparkline(c)),50);
+}
+function drawSparkline(coin){
+  const cv=document.getElementById('spark-'+coin.sym);
+  if(!cv) return;
+  const ctx=cv.getContext('2d');
+  cv.width=80; cv.height=36;
+  const pts=20,data=[];
+  let v=100;
+  for(let i=0;i<pts;i++){ v+=(Math.random()-0.5+coin.sparkDir*0.1)*3; v=Math.max(70,Math.min(130,v)); data.push(v); }
+  const min=Math.min(...data),max=Math.max(...data),range=max-min||1;
+  ctx.clearRect(0,0,80,36);
+  ctx.beginPath();
+  data.forEach((d,i)=>{ const x=(i/(pts-1))*78+1,y=34-((d-min)/range)*30; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.strokeStyle=coin.chg>=0?'#00d68f':'#ff4d6a'; ctx.lineWidth=1.5; ctx.stroke();
+}
+function filterCoins(){
+  const q=document.getElementById('coinSearch').value.toLowerCase();
+  const filtered=COINS.filter(c=>{
+    const fMatch=currentFilter==='all'||(currentFilter==='top10'&&c.rank<=10)||(currentFilter==='gainers'&&c.chg>0)||(currentFilter==='losers'&&c.chg<0)||c.tags.includes(currentFilter);
+    const qMatch=!q||c.name.toLowerCase().includes(q)||c.sym.toLowerCase().includes(q);
+    return fMatch&&qMatch;
+  });
+  renderCoinTable(filtered);
+}
+function setFilter(f,el){ currentFilter=f; document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active')); el.classList.add('active'); filterCoins(); }
+
+// TRADE
+let selectedCoin=COINS[0], orderSide='buy';
+function buildTradePairSelect(){
+  const sel=document.getElementById('tradePairSelect');
+  sel.innerHTML=COINS.map(c=>`<option value="${c.sym}">${c.sym}/USDT</option>`).join('');
+}
+function openTrade(sym){
+  const coin=COINS.find(c=>c.sym===sym);
+  if(!coin) return;
+  selectedCoin=coin;
+  tradesLog=[];
+  document.getElementById('tradePairSelect').value=sym;
+  updateTradeHeader(coin);
+  switchPage('trade',document.querySelector('[data-page="trade"]'));
+  setTimeout(()=>startLiveChart(),80);
+}
+function updateTradePair(){ openTrade(document.getElementById('tradePairSelect').value); }
+function updateTradeHeader(coin){
+  document.getElementById('tradeIcon').textContent=coin.sym.slice(0,3);
+  document.getElementById('tradeIcon').style.background=coin.bg;
+  document.getElementById('tradeIcon').style.color=coin.color;
+  document.getElementById('tradeName').textContent=coin.name;
+  document.getElementById('tradeSym').textContent=coin.sym+'/USDT';
+  document.getElementById('tradePrice').textContent=fmtPrice(coin.price);
+  const chgEl=document.getElementById('tradeChange');
+  chgEl.textContent=(coin.chg>=0?'+':'')+coin.chg.toFixed(2)+'%';
+  chgEl.className='sel-change '+(coin.chg>=0?'up':'dn');
+  document.getElementById('orderSuffix').textContent=coin.sym;
+  document.getElementById('submitOrderBtn').textContent=(orderSide==='buy'?'Купить ':'Продать ')+coin.sym;
+  const op=document.getElementById('orderPrice');
+  if(op){ op.value=coin.price>=1000?coin.price.toFixed(2):coin.price.toFixed(coin.price>=0.01?4:8); op._edited=false; }
+  calcOrderTotal();
+}
+function setOrderSide(side){
+  orderSide=side;
+  document.getElementById('buyTab').classList.toggle('active',side==='buy');
+  document.getElementById('sellTab').classList.toggle('active',side==='sell');
+  const btn=document.getElementById('submitOrderBtn');
+  btn.className='submit-btn '+side;
+  btn.textContent=(side==='buy'?'Купить ':'Продать ')+(selectedCoin?selectedCoin.sym:'');
+}
+function setPct(pct){
+  if(!currentUser){ showToast('Войдите в аккаунт','🔐'); return; }
+  const data=getUserData(currentUser);
+  if(!data) return;
+  const bal=data.balance;
+  const price=parseFloat(document.getElementById('orderPrice').value)||0;
+  if(!price||!bal){ showToast('Недостаточно средств','💳'); return; }
+  const qty=(bal*(pct/100))/price;
+  document.getElementById('orderQty').value=qty.toFixed(8);
+  calcOrderTotal();
+}
+function calcOrderTotal(){
+  const price=parseFloat(document.getElementById('orderPrice').value)||0;
+  const qty=parseFloat(document.getElementById('orderQty').value)||0;
+  const total=price*qty;
+  document.getElementById('orderTotal').value=total?total.toFixed(2):'';
+  document.getElementById('feeVal').textContent=total?(total*0.001).toFixed(4)+' USDT':'— USDT';
+}
+function submitOrder(){
+  if(!currentUser){ showToast('Войдите в аккаунт','🔐'); return; }
+  const qty=parseFloat(document.getElementById('orderQty').value)||0;
+  const total=parseFloat(document.getElementById('orderTotal').value)||0;
+  const coin=selectedCoin||COINS[0];
+  if(!qty||!total){ showToast('Введите количество монет','⚠️'); return; }
+  const data=getUserData(currentUser);
+  if(!data) return;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ru')+' '+now.toTimeString().slice(0,5);
+  if(orderSide==='buy'){
+    const needed=total*(1.001);
+    if(data.balance<needed){ showToast('Недостаточно USDT','💳'); return; }
+    data.balance-=needed;
+    data.holdings=data.holdings||{};
+    data.holdings[coin.sym]=(data.holdings[coin.sym]||0)+qty;
+    data.tradeHistory=data.tradeHistory||[];
+    data.tradeHistory.unshift({side:'buy',coin:coin.sym,amount:qty.toFixed(6)+' '+coin.sym,usd:'$'+total.toFixed(2),date:dateStr});
+    saveUserData(currentUser,data);
+    showToast(`Куплено ${qty.toFixed(6)} ${coin.sym} за $${total.toFixed(2)}`,'✅');
+  } else {
+    data.holdings=data.holdings||{};
+    const have=data.holdings[coin.sym]||0;
+    if(have<qty){ showToast(`Недостаточно ${coin.sym}`,'⚠️'); return; }
+    data.holdings[coin.sym]-=qty;
+    if(data.holdings[coin.sym]<0.000001) delete data.holdings[coin.sym];
+    data.balance+=total*(0.999);
+    data.tradeHistory=data.tradeHistory||[];
+    data.tradeHistory.unshift({side:'sell',coin:coin.sym,amount:qty.toFixed(6)+' '+coin.sym,usd:'$'+total.toFixed(2),date:dateStr});
+    saveUserData(currentUser,data);
+    showToast(`Продано ${qty.toFixed(6)} ${coin.sym} за $${total.toFixed(2)}`,'✅');
+  }
+  document.getElementById('orderQty').value='';
+  document.getElementById('orderTotal').value='';
+  document.getElementById('feeVal').textContent='— USDT';
+  refreshUserUI();
+}
+function setCi(el){ document.querySelectorAll('.ci').forEach(e=>e.classList.remove('active')); el.classList.add('active'); generateCandles(); }
+
+// CANDLESTICK CHART
+let candleData=[], liveCandle=null, chartTimer=null, obTimer=null, tradesLog=[];
+const SPREAD_PCT=0.00035;
+
+function generateCandles(){
+  const coin=selectedCoin||COINS[0];
+  const base=coin.price;
+  candleData=[];
+  let p=base*0.96;
+  const now=Date.now(), INT=60000, N=90;
+  for(let i=N;i>=1;i--){
+    const o=p;
+    const trend=i>N*0.4?0.00028:-0.00008;
+    const noise=(Math.random()-0.47)*0.007;
+    const cl=o*(1+trend+noise);
+    candleData.push({t:now-i*INT,o,h:Math.max(o,cl)*(1+Math.random()*0.003),l:Math.min(o,cl)*(1-Math.random()*0.003),c:cl,v:Math.random()*2+0.2});
+    p=cl;
+  }
+  const last=candleData[candleData.length-1];
+  last.c=base; last.h=Math.max(last.h,base); last.l=Math.min(last.l,base);
+  liveCandle={t:now,o:base,h:base,l:base,c:base,v:0};
+}
+function tickCandle(){
+  if(!liveCandle) return;
+  const coin=selectedCoin||COINS[0];
+  const move=(Math.random()-0.49)*0.0022;
+  const np=liveCandle.c*(1+move);
+  liveCandle.c=np;
+  liveCandle.h=Math.max(liveCandle.h,np);
+  liveCandle.l=Math.min(liveCandle.l,np);
+  liveCandle.v+=Math.random()*0.04;
+  coin.price=np; MARKET_PRICES[coin.sym]=np;
+  const pe=document.getElementById('tradePrice');
+  if(pe) pe.textContent=fmtPrice(np);
+  const op=document.getElementById('orderPrice');
+  if(op&&!op._edited){ op.value=np>=1000?np.toFixed(2):np.toFixed(np>=0.01?4:8); calcOrderTotal(); }
+  if(Date.now()-liveCandle.t>20000){
+    candleData.push({...liveCandle}); if(candleData.length>120) candleData.shift();
+    liveCandle={t:Date.now(),o:np,h:np,l:np,c:np,v:0};
+  }
+  drawCandleChart();
+}
+function drawCandleChart(){
+  const canvas=document.getElementById('mainChart');
+  if(!canvas||!canvas.offsetParent) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||700, H=canvas.offsetHeight||420;
+  if(canvas.width!==W||canvas.height!==H){ canvas.width=W; canvas.height=H; }
+  const PAD={l:72,r:74,t:14,b:26};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  const all=[...candleData,...(liveCandle?[liveCandle]:[])];
+  const vis=all.slice(-70);
+  if(!vis.length) return;
+  const pMax=Math.max(...vis.map(c=>c.h))*1.001, pMin=Math.min(...vis.map(c=>c.l))*0.999, pRng=pMax-pMin||1;
+  const py=p=>PAD.t+cH-((p-pMin)/pRng)*cH;
+  const gap=cW/vis.length, cw=Math.max(2,Math.floor(gap*0.72));
+  ctx.clearRect(0,0,W,H);
+  ctx.font='9px Space Mono';
+  for(let i=0;i<=7;i++){
+    const gp=pMin+(i/7)*pRng, gy=py(gp);
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.l,gy); ctx.lineTo(W-PAD.r,gy); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.30)'; ctx.textAlign='right';
+    const lbl=gp>=1000?'$'+(gp/1000).toFixed(gp>=100000?1:2)+'K':'$'+gp.toFixed(gp>10?2:5);
+    ctx.fillText(lbl,PAD.l-4,gy+3);
+  }
+  const volMax=Math.max(...vis.map(c=>c.v))||1, volH=cH*0.16;
+  vis.forEach((c,i)=>{
+    const x=PAD.l+i*gap+gap/2-cw/2;
+    ctx.fillStyle=c.c>=c.o?'rgba(0,214,143,0.20)':'rgba(255,77,106,0.20)';
+    ctx.fillRect(x,PAD.t+cH-(c.v/volMax)*volH,cw,(c.v/volMax)*volH);
+  });
+  vis.forEach((c,i)=>{
+    const cx=PAD.l+i*gap+gap/2;
+    const isG=c.c>=c.o, col=isG?'#00d68f':'#ff4d6a';
+    const isLive=(i===vis.length-1&&!!liveCandle);
+    ctx.strokeStyle=col; ctx.globalAlpha=isLive?0.9:0.75; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,py(c.h)); ctx.lineTo(cx,py(c.l)); ctx.stroke();
+    const top=py(Math.max(c.o,c.c)), bot=py(Math.min(c.o,c.c)), bh=Math.max(1.5,bot-top);
+    ctx.globalAlpha=isLive?0.85:0.92; ctx.fillStyle=col;
+    ctx.fillRect(cx-cw/2,top,cw,bh);
+    if(isLive){ ctx.globalAlpha=1; ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.strokeRect(cx-cw/2,top,cw,bh); }
+    ctx.globalAlpha=1;
+  });
+  const curP=liveCandle?liveCandle.c:vis[vis.length-1].c, lpy=py(curP);
+  ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.l,lpy); ctx.lineTo(W-PAD.r,lpy); ctx.stroke(); ctx.setLineDash([]);
+  const isGreen=liveCandle?liveCandle.c>=liveCandle.o:true;
+  ctx.fillStyle=isGreen?'#00d68f':'#ff4d6a';
+  ctx.fillRect(W-PAD.r+1,lpy-9,PAD.r-2,18);
+  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.font='bold 9px Space Mono';
+  const pLbl=curP>=1000?'$'+(curP/1000).toFixed(curP>=100000?1:2)+'K':'$'+curP.toFixed(curP>10?2:4);
+  ctx.fillText(pLbl,W-PAD.r+4,lpy+3);
+}
+
+// ORDER BOOK
+let liveAsks=[], liveBids=[];
+function buildOrderBook(){
+  const mid=(selectedCoin||COINS[0]).price;
+  liveAsks=[]; liveBids=[];
+  for(let i=0;i<12;i++){
+    const s=SPREAD_PCT*(i+1)*(0.88+Math.random()*0.24);
+    liveAsks.push({p:mid*(1+SPREAD_PCT/2+s),amt:+(Math.random()*3+0.04).toFixed(5),f:false});
+    liveBids.push({p:mid*(1-SPREAD_PCT/2-s),amt:+(Math.random()*3+0.04).toFixed(5),f:false});
+  }
+  liveAsks.sort((a,b)=>a.p-b.p); liveBids.sort((a,b)=>b.p-a.p);
+}
+function tickOrderBook(){
+  buildOrderBook();
+  renderOrderBook();
+  addTrades((selectedCoin||COINS[0]).price);
+}
+function renderOrderBook(){
+  const mid=(selectedCoin||COINS[0]).price;
+  const asksEl=document.getElementById('asks'), bidsEl=document.getElementById('bids');
+  if(!asksEl) return;
+  const showA=liveAsks.slice(0,8), showB=liveBids.slice(0,8);
+  const maxA=Math.max(...showA.map(a=>a.amt))||1, maxB=Math.max(...showB.map(b=>b.amt))||1;
+  const dec=mid>=1000?2:5;
+  asksEl.innerHTML=[...showA].reverse().map(a=>`<div style="display:flex;justify-content:space-between;font-size:11.5px;font-family:'Space Mono',monospace;padding:2.5px 0;position:relative;overflow:hidden;color:var(--red)"><div style="position:absolute;top:0;right:0;height:100%;width:${Math.min(100,a.amt/maxA*100)|0}%;background:rgba(255,77,106,.15);border-radius:2px;z-index:0"></div><span style="position:relative;z-index:1">${a.p.toFixed(dec)}</span><span style="position:relative;z-index:1">${a.amt.toFixed(4)}</span><span style="position:relative;z-index:1">${(a.p*a.amt).toFixed(0)}</span></div>`).join('');
+  bidsEl.innerHTML=showB.map(b=>`<div style="display:flex;justify-content:space-between;font-size:11.5px;font-family:'Space Mono',monospace;padding:2.5px 0;position:relative;overflow:hidden;color:var(--green)"><div style="position:absolute;top:0;right:0;height:100%;width:${Math.min(100,b.amt/maxB*100)|0}%;background:rgba(0,214,143,.15);border-radius:2px;z-index:0"></div><span style="position:relative;z-index:1">${b.p.toFixed(dec)}</span><span style="position:relative;z-index:1">${b.amt.toFixed(4)}</span><span style="position:relative;z-index:1">${(b.p*b.amt).toFixed(0)}</span></div>`).join('');
+  const sp=((showA[0]?.p||mid*1.001)-(showB[0]?.p||mid*0.999));
+  const el=document.getElementById('spreadVal');
+  if(el) el.textContent='$'+sp.toFixed(sp>1?2:4)+' ('+(sp/mid*100).toFixed(3)+'%)';
+}
+function addTrades(midPrice){
+  const dec=midPrice>=1000?2:5;
+  const n=Math.floor(Math.random()*3)+1;
+  for(let i=0;i<n;i++){
+    const p=midPrice*(1+(Math.random()-0.5)*SPREAD_PCT*2);
+    const side=Math.random()>0.45, amt=(Math.random()*1.5+0.001).toFixed(midPrice>1000?5:4);
+    tradesLog.unshift({p:p.toFixed(dec),amt,side,t:new Date().toTimeString().slice(0,8)});
+  }
+  if(tradesLog.length>50) tradesLog=tradesLog.slice(0,50);
+  const el=document.getElementById('recentTrades'); if(!el) return;
+  el.innerHTML='<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);letter-spacing:.7px;margin-bottom:6px;text-transform:uppercase"><span>Цена</span><span>Кол-во</span><span>Время</span></div>'+
+    tradesLog.slice(0,20).map((t,i)=>`<div style="display:flex;justify-content:space-between;font-size:11.5px;font-family:'Space Mono',monospace;padding:2px 0;color:${t.side?'var(--green)':'var(--red)'};opacity:${Math.max(0.25,1-i*0.04).toFixed(2)}"><span>${t.p}</span><span>${t.amt}</span><span style="color:var(--text3)">${t.t}</span></div>`).join('');
+}
+function startLiveChart(){
+  tradesLog=[];
+  generateCandles();
+  buildOrderBook();
+  if(chartTimer) clearInterval(chartTimer);
+  if(obTimer) clearInterval(obTimer);
+  chartTimer=setInterval(tickCandle,850);
+  obTimer=setInterval(tickOrderBook,1100);
+  drawCandleChart();
+  renderOrderBook();
+}
+
+// WALLET
+function renderHoldings(data){
+  const body=document.getElementById('holdingsBody');
+  const h=data.holdings||{};
+  const keys=Object.keys(h).filter(s=>h[s]>0);
+  let rows='';
+  if(data.balance>0){
+    rows+=`<div class="ht-row"><div class="coin-info"><div class="coin-icon" style="background:#26a17b22;color:#26a17b">USD</div><div><div class="coin-name">USDT</div><div class="coin-sym">Tether</div></div></div><div class="ht-val">${data.balance.toFixed(2)}</div><div class="ht-val">$1.00</div><div class="ht-val">$${data.balance.toFixed(2)}</div><div class="ht-val" style="color:var(--green)">стейбл</div></div>`;
+  }
+  keys.forEach(sym=>{
+    const coin=COINS.find(c=>c.sym===sym);
+    if(!coin) return;
+    const val=h[sym]*coin.price;
+    rows+=`<div class="ht-row" onclick="openTrade('${sym}')"><div class="coin-info"><div class="coin-icon" style="background:${coin.bg};color:${coin.color}">${sym.slice(0,3)}</div><div><div class="coin-name">${coin.name}</div><div class="coin-sym">${sym}</div></div></div><div class="ht-val">${h[sym].toFixed(6)}</div><div class="ht-val">${fmtPrice(coin.price)}</div><div class="ht-val">$${val.toFixed(2)}</div><div class="ht-val" style="color:${coin.chg>=0?'var(--green)':'var(--red)'}">${coin.chg>=0?'+':''}${coin.chg.toFixed(2)}%</div></div>`;
+  });
+  if(!rows) rows=`<div class="empty-wallet"><div class="ew-icon">👛</div><p>Ваш кошелёк пуст</p><small>Пополните баланс через раздел «Пополнение»</small></div>`;
+  body.innerHTML=rows;
+}
+function renderAllocFromData(data){
+  const el=document.getElementById('allocList');
+  const h=data.holdings||{};
+  const items=[{sym:'USDT',name:'USDT',val:data.balance,color:'#26a17b'}];
+  Object.entries(h).forEach(([sym,amt])=>{ const c=COINS.find(x=>x.sym===sym); if(c&&amt>0) items.push({sym,name:c.name,val:amt*c.price,color:c.color}); });
+  const total=items.reduce((s,i)=>s+i.val,0);
+  if(!total){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Нет активов — пополните кошелёк</div>'; return; }
+  el.innerHTML=items.filter(i=>i.val>0).map(i=>{
+    const pct=((i.val/total)*100).toFixed(1);
+    return `<div class="alloc-item"><div style="width:28px;height:28px;border-radius:50%;background:${i.color}22;color:${i.color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Space Mono',monospace">${i.sym.slice(0,3)}</div><span style="font-size:13px;min-width:60px">${i.sym}</span><div class="alloc-bar-wrap"><div class="alloc-bar" style="width:${pct}%;background:${i.color}"></div></div><span class="alloc-pct">${pct}%</span></div>`;
+  }).join('');
+}
+
+// DEPOSIT
+const DEP_ADDRESSES={
+  BTC:'bc1q5wjc4djs03p5fcsjmlq3k2hcm2w6jky7ax8k5l',
+  ETH:'0xf0C4bceB2C396EFDd3930fcf186056a5e050f30C',
+  USDT_TRC20:'TJ4zrzTsYchLZTrA7ppc8ywMsfNWS22Ljm',
+  USDT_ERC20:'0xf0C4bceB2C396EFDd3930fcf186056a5e050f30C',
+  SOL:'GNtGZ5gdU7tNBhyv5cHuP98us9VznphbFSEJoZ9aJAkw',
+  TRX:'TJ4zrzTsYchLZTrA7ppc8ywMsfNWS22Ljm',
+  LTC:'ltc1qgc28cfpv2tzs32mv2z96lf65tprlv87ep8pytk',
+  XMR:'GNtGZ5gdU7tNBhyv5cHuP98us9VznphbFSEJoZ9aJAkw',
+};
+function selectDepMethod(el,method){
+  document.querySelectorAll('.method-card').forEach(m=>m.classList.remove('selected'));
+  el.classList.add('selected');
+  showToast(method==='crypto'?'Криптовалюта выбрана':'Способ скоро доступен',method==='crypto'?'₿':'⚙️');
+}
+function updateDepAddress(){
+  const sym=document.getElementById('depCoinSelect').value;
+  document.getElementById('depAddress').textContent=DEP_ADDRESSES[sym]||'— адрес в разработке —';
+  document.getElementById('depNetwork').textContent=sym;
+  document.getElementById('depPendingBox').style.display='none';
+  generateQR();
+}
+function copyAddress(){
+  const addr=document.getElementById('depAddress').textContent;
+  if(!addr||addr.includes('администратором')){ showToast('Адрес ещё не добавлен','⚠️'); return; }
+  navigator.clipboard?.writeText(addr).catch(()=>{});
+  showToast('Адрес скопирован в буфер обмена','📋');
+}
+function confirmDeposit(){
+  if(!currentUser){ showToast('Войдите в аккаунт','🔐'); return; }
+  document.getElementById('depPendingBox').style.display='block';
+  showToast('Ожидаем транзакцию','⏳');
+  const data=getUserData(currentUser); if(!data) return;
+  data.depHistory=data.depHistory||[];
+  const sym=document.getElementById('depCoinSelect').value;
+  data.depHistory.unshift({coin:sym,amount:'—',usd:'—',date:new Date().toLocaleDateString('ru'),status:'pending'});
+  saveUserData(currentUser,data);
+  renderDepHistoryFromData(data);
+}
+function renderDepHistoryFromData(data){
+  const body=document.getElementById('depHistory');
+  const hist=data.depHistory||[];
+  if(!hist.length){ body.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">История пуста</td></tr>'; return; }
+  body.innerHTML=hist.map(d=>`<tr><td style="font-weight:500">${d.coin}</td><td style="font-family:'Space Mono',monospace">${d.amount}<br><span style="font-size:11px;color:var(--text3)">${d.usd}</span></td><td style="color:var(--text2)">${d.date}</td><td><span class="badge ${d.status}">${d.status==='completed'?'✓ Выполнен':d.status==='pending'?'⏳ Ожидание':'✕ Ошибка'}</span></td></tr>`).join('');
+}
+function generateQR(){
+  const qr=document.getElementById('qrImg');
+  if(!qr) return;
+  qr.innerHTML='';
+  const size=9, cell=9;
+  const grid=[];
+  for(let i=0;i<size;i++){ grid.push([]); for(let j=0;j<size;j++) grid[i].push(Math.random()>0.5); }
+  qr.style.cssText=`display:grid;grid-template-columns:repeat(${size},${cell}px);gap:1px;background:#fff;padding:6px;border-radius:4px`;
+  grid.forEach(row=>row.forEach(v=>{ const d=document.createElement('div'); d.style.cssText=`width:${cell}px;height:${cell}px;background:${v?'#000':'#fff'}`; qr.appendChild(d); }));
+}
+
+// KYC
+function switchKyc(step){
+  document.querySelectorAll('.kyc-step-content').forEach(el=>el.classList.remove('active'));
+  document.getElementById('kyc-step-'+step).classList.add('active');
+  document.querySelectorAll('.kyc-step-item').forEach((el,i)=>{ el.classList.remove('active'); if(i+1===step) el.classList.add('active'); });
+}
+function kycNext(step){
+  if(step<5) switchKyc(step+1);
+  const item=document.querySelectorAll('.kyc-step-item')[step-1];
+  if(item){ item.classList.remove('active'); item.classList.add('done'); item.querySelector('.kyc-step-num').textContent='✓'; }
+}
+function kycPrev(step){ if(step>1) switchKyc(step-1); }
+function submitKyc(){
+  document.querySelectorAll('.kyc-step-item').forEach((el,i)=>{ if(i<4){ el.classList.add('done'); el.querySelector('.kyc-step-num').textContent='✓'; } });
+  document.getElementById('kyc-l2-status').textContent='⏳ На проверке';
+  showToast('Заявка на верификацию отправлена!','🎉');
+  if(currentUser){ const data=getUserData(currentUser); if(data){ data.kycSubmitted=true; saveUserData(currentUser,data); } }
+}
+
+// LEGAL DOCS
+function switchDoc(doc,el){
+  document.querySelectorAll('.legal-doc').forEach(d=>d.style.display='none');
+  document.querySelectorAll('.doc-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('legal-'+doc).style.display='block';
+  el.classList.add('active');
+}
+
+// NAVIGATION
+function switchPage(pageId,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else { const ne=document.querySelector(`[data-page="${pageId}"]`); if(ne) ne.classList.add('active'); }
+  if(pageId==='trade') setTimeout(()=>startLiveChart(),100);
+  if(pageId==='wallet'&&currentUser) refreshUserUI();
+  if(pageId==='history') renderHistoryPage();
+  if(pageId==='settings') loadSettingsPage();
+}
+
+// HISTORY PAGE
+function renderHistoryPage(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser); if(!data) return;
+  const allOps=[];
+  // Add deposits
+  (data.depHistory||[]).forEach(d=>{ allOps.push({type:'deposit',coin:d.coin,amount:d.amount,usd:d.usd,date:d.date,status:d.status}); });
+  // Add trades from transactionHistory if exists
+  (data.tradeHistory||[]).forEach(t=>{ allOps.push({type:t.side,coin:t.coin,amount:t.amount,usd:t.usd,date:t.date,status:'completed'}); });
+
+  const filter=document.getElementById('histFilter')?.value||'all';
+  const filtered=filter==='all'?allOps:allOps.filter(o=>o.status===filter);
+
+  // Stats
+  const cntEl=document.getElementById('hist-count');
+  const depsEl=document.getElementById('hist-deps');
+  const trdEl=document.getElementById('hist-trades');
+  const lastEl=document.getElementById('hist-last');
+  if(cntEl) cntEl.textContent=allOps.length;
+  if(depsEl) depsEl.textContent=allOps.filter(o=>o.type==='deposit').length;
+  if(trdEl) trdEl.textContent=allOps.filter(o=>o.type==='buy'||o.type==='sell').length;
+  if(lastEl) lastEl.textContent=allOps.length?(allOps[0].date||'—').split(' ')[0]:'—';
+
+  const tbody=document.getElementById('historyTableBody');
+  if(!tbody) return;
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="5" style="padding:50px 20px;text-align:center;color:var(--text3)"><div style="font-size:38px;margin-bottom:12px">📭</div><div style="font-size:14px;margin-bottom:4px;color:var(--text2)">Операций не найдено</div><div style="font-size:12px">Совершите первую операцию — она появится здесь</div></td></tr>';
+    return;
+  }
+  const cc={BTC:'#f7931a',ETH:'#627eea',USDT:'#26a17b',SOL:'#9945ff',TRX:'#ff0013',LTC:'#bfbbbb',XMR:'#ff6600',BNB:'#f3ba2f'};
+  const typeLabel={deposit:'⬇ Пополнение',buy:'🟢 Покупка',sell:'🔴 Продажа'};
+  const typeColor={deposit:'var(--green)',buy:'var(--green)',sell:'var(--red)'};
+  tbody.innerHTML=filtered.map(o=>{
+    const col=cc[o.coin]||'#5b6ef5';
+    const status=o.status==='completed'?'<span class="badge completed">✓ Выполнен</span>':o.status==='pending'?'<span class="badge pending">⏳ Ожидание</span>':'<span class="badge failed">✕ Ошибка</span>';
+    return `<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <td style="padding:12px 16px;color:${typeColor[o.type]||'var(--text)'};font-weight:500;font-size:13px">${typeLabel[o.type]||o.type}</td>
+      <td style="padding:12px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:50%;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Space Mono',monospace">${(o.coin||'?').slice(0,3)}</div><div style="font-weight:500;font-size:13px">${o.coin}</div></div></td>
+      <td style="padding:12px 16px;text-align:right;font-family:'Space Mono',monospace;font-size:13px">${o.amount}<br><span style="font-size:11px;color:var(--text3)">${o.usd}</span></td>
+      <td style="padding:12px 16px;color:var(--text2);font-size:13px">${o.date}</td>
+      <td style="padding:12px 16px;text-align:center">${status}</td>
+    </tr>`;
+  }).join('');
+}
+
+// SETTINGS PAGE
+function loadSettingsPage(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser); if(!data) return;
+  const av=document.getElementById('settingsAvatar'); if(av) av.textContent=currentUser[0].toUpperCase();
+  const un=document.getElementById('settingsUsername'); if(un) un.textContent=currentUser;
+  const dn=document.getElementById('settingsDisplayName'); if(dn) dn.value=data.displayName||'';
+  const em=document.getElementById('settingsEmail'); if(em) em.value=data.email||'';
+  const ph=document.getElementById('settingsPhone'); if(ph) ph.value=data.phone||'';
+  const co=document.getElementById('settingsCountry'); if(co&&data.country) co.value=data.country;
+}
+function saveProfileSettings(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser); if(!data) return;
+  data.displayName=document.getElementById('settingsDisplayName')?.value||'';
+  data.email=document.getElementById('settingsEmail')?.value||'';
+  data.phone=document.getElementById('settingsPhone')?.value||'';
+  data.country=document.getElementById('settingsCountry')?.value||'';
+  saveUserData(currentUser,data);
+  showToast('Профиль обновлён','✅');
+}
+function changePassword(){
+  if(!currentUser) return;
+  const data=getUserData(currentUser); if(!data) return;
+  const old=document.getElementById('settingsOldPass')?.value;
+  const np=document.getElementById('settingsNewPass')?.value;
+  const np2=document.getElementById('settingsNewPass2')?.value;
+  if(!old||!np||!np2){ showToast('Заполните все поля','⚠️'); return; }
+  if(data.password!==btoa(old)){ showToast('Неверный текущий пароль','❌'); return; }
+  if(np.length<6){ showToast('Пароль минимум 6 символов','⚠️'); return; }
+  if(np!==np2){ showToast('Пароли не совпадают','⚠️'); return; }
+  data.password=btoa(np);
+  saveUserData(currentUser,data);
+  ['settingsOldPass','settingsNewPass','settingsNewPass2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  showToast('Пароль успешно изменён','✅');
+}
+
+// TOAST
+function showToast(msg,icon='ℹ️'){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className='toast success';
+  t.innerHTML=`<span class="ti">${icon}</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.animation='fadeOut .3s ease forwards'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+window.addEventListener('resize',()=>{ if(document.getElementById('page-trade').classList.contains('active')) drawCandleChart(); });
+
+// ADMIN
+const ADMIN_LOGIN='Kriptex_Admin_2026';
+const ADMIN_PASS='Kr!pt3x#S3cur3@P@nel$99';
+let adminLogEntries=[];
+function adminLog(msg){ const t=new Date().toTimeString().slice(0,8); adminLogEntries.unshift('['+t+'] '+msg); if(adminLogEntries.length>80) adminLogEntries.pop(); }
+function openAdmin(){ document.getElementById('adminOverlay').classList.add('open'); document.getElementById('adminAuthBox').style.display='block'; document.getElementById('adminPanel').style.display='none'; document.getElementById('adminAuthErr').style.display='none'; document.getElementById('adminLoginInput').value=''; document.getElementById('adminPassInput').value=''; }
+function closeAdmin(){ document.getElementById('adminOverlay').classList.remove('open'); }
+function doAdminLogin(){
+  const u=document.getElementById('adminLoginInput').value;
+  const p=document.getElementById('adminPassInput').value;
+  const err=document.getElementById('adminAuthErr');
+  if(u===ADMIN_LOGIN&&p===ADMIN_PASS){
+    document.getElementById('adminAuthBox').style.display='none';
+    document.getElementById('adminPanel').style.display='flex';
+    adminLog('Вход в панель администратора');
+    refreshAdminDashboard();
+    startAdminClock();
+  } else {
+    err.textContent='Неверный логин или пароль';
+    err.style.display='block';
+  }
+}
+document.addEventListener('keydown',e=>{ if(e.ctrlKey&&e.shiftKey&&e.key==='A') openAdmin(); });
+function startAdminClock(){
+  const cl=document.getElementById('adminClock');
+  if(!cl) return;
+  const tick=()=>{ cl.textContent=new Date().toLocaleString('ru'); };
+  tick(); setInterval(tick,1000);
+}
+function switchAdminTab(tab,el){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById('atab-'+tab);
+  if(sec) sec.classList.add('active');
+  if(el) el.classList.add('active');
+  if(tab==='dashboard') refreshAdminDashboard();
+  if(tab==='users') refreshAdminUsers();
+  if(tab==='log') refreshAdminLog();
+}
+function refreshAdminDashboard(){
+  const users=getUsers();
+  document.getElementById('adm-users').textContent=Object.keys(users).length;
+  ['BTC','ETH','XMR','SOL','BNB','TON','LTC','TRX'].forEach(sym=>{
+    const c=COINS.find(x=>x.sym===sym); if(!c) return;
+    const el=document.getElementById('mm-'+sym.toLowerCase()+'-price');
+    if(el) el.textContent=fmtPrice(c.price);
+    if(sym==='BTC'){ const e=document.getElementById('adm-btc'); if(e) e.textContent=fmtPrice(c.price); }
+    if(sym==='XMR'){ const e=document.getElementById('adm-xmr'); if(e) e.textContent=fmtPrice(c.price); }
+  });
+  const logEl=document.getElementById('adminLogDash');
+  if(logEl) logEl.innerHTML=adminLogEntries.slice(0,12).map(e=>`<div style="font-size:11px;font-family:'Space Mono',monospace;color:#8b90b8;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">${e}</div>`).join('') || '<div style="color:#555a7a;font-size:12px;padding:10px">Событий нет</div>';
+}
+function refreshAdminUsers(){
+  const users=getUsers();
+  const tbody=document.getElementById('adminUserTable');
+  if(!tbody) return;
+  const rows=Object.entries(users).map(([name,data])=>{
+    const bal=(data.balance||0).toFixed(2);
+    const kyc=data.kycSubmitted?'<span style="color:#00d68f">Отправлен</span>':'<span style="color:#555a7a">Нет</span>';
+    return `<tr><td style="font-weight:500;color:#e8eaf6">${name}</td><td>${data.email||'—'}</td><td style="font-family:'Space Mono',monospace;color:#00d68f">$${bal}</td><td>${kyc}</td><td style="color:#555a7a">${data.created?data.created.slice(0,10):'—'}</td><td style="display:flex;gap:6px"><button class="admin-btn success" style="padding:4px 10px;font-size:11px" onclick="adminAddBalance('${name}')">+ Баланс</button><button class="admin-btn danger" style="padding:4px 10px;font-size:11px" onclick="adminDeleteUser('${name}')">Удалить</button></td></tr>`;
+  });
+  tbody.innerHTML=rows.length?rows.join(''):'<tr><td colspan="6" style="text-align:center;color:#555a7a;padding:20px">Нет пользователей</td></tr>';
+}
+function adminAddBalance(uname){
+  const amount=prompt('Сумма для начисления (USD):');
+  if(!amount||isNaN(amount)) return;
+  const data=getUserData(uname); if(!data) return;
+  data.balance=(data.balance||0)+parseFloat(amount);
+  saveUserData(uname,data);
+  adminLog('Начислено $'+amount+' → '+uname);
+  refreshAdminUsers();
+  if(currentUser===uname) refreshUserUI();
+  showToast('+$'+amount+' для '+uname,'✅');
+}
+function adminDeleteUser(uname){
+  if(!confirm('Удалить '+uname+'?')) return;
+  const users=getUsers(); delete users[uname]; saveUsers(users);
+  adminLog('Удалён: '+uname);
+  refreshAdminUsers();
+  showToast('Удалён: '+uname,'🗑️');
+}
+function refreshAdminLog(){
+  const el=document.getElementById('adminLogFull');
+  if(!el) return;
+  el.innerHTML=adminLogEntries.map(e=>`<div style="font-size:11px;font-family:'Space Mono',monospace;color:#8b90b8;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.03)">${e}</div>`).join('');
+}
+// ================================================================
+// ADMIN PRICE PERSISTENCE — цены сохраняются в localStorage
+// ================================================================
+const PRICE_STORAGE_KEY = 'kx_admin_prices';
+
+function saveAdminPrices(){
+  const saved = {};
+  COINS.forEach(c => { saved[c.sym] = c.price; });
+  localStorage.setItem(PRICE_STORAGE_KEY, JSON.stringify(saved));
+}
+
+function loadAdminPrices(){
+  try {
+    const raw = localStorage.getItem(PRICE_STORAGE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    COINS.forEach(c => {
+      if(saved[c.sym] && !isNaN(saved[c.sym])){
+        c.price = parseFloat(saved[c.sym]);
+        MARKET_PRICES[c.sym] = c.price;
+      }
+    });
+    console.log('[Kriptex] Admin prices loaded from storage');
+  } catch(e){}
+}
+
+function adminQuickPump(sym,pct){
+  const coin=COINS.find(c=>c.sym===sym); if(!coin) return;
+  coin.price=coin.price*(1+pct/100);
+  MARKET_PRICES[sym]=coin.price;
+  saveAdminPrices(); // ← сохраняем
+  adminLog('MM: '+sym+' '+(pct>0?'+':'')+pct+'% → '+fmtPrice(coin.price));
+  updateStatCards();
+  refreshAdminDashboard();
+  if(selectedCoin&&selectedCoin.sym===sym){ updateTradeHeader(coin); generateCandles(); }
+  showToast(sym+' '+(pct>0?'▲ +':'▼ ')+pct+'% → '+fmtPrice(coin.price),'💹');
+}
+function adminSetPrice(sym){
+  const val=document.getElementById('adminPriceInput_'+sym)?.value;
+  if(!val||isNaN(val)){ showToast('Введите корректную цену','⚠️'); return; }
+  const coin=COINS.find(c=>c.sym===sym); if(!coin) return;
+  coin.price=parseFloat(val); MARKET_PRICES[sym]=parseFloat(val);
+  saveAdminPrices(); // ← сохраняем
+  adminLog('Цена зафиксирована: '+sym+' → $'+val);
+  updateStatCards(); refreshAdminDashboard();
+  if(selectedCoin&&selectedCoin.sym===sym){ updateTradeHeader(coin); generateCandles(); }
+  showToast(sym+' → $'+val+' (зафиксировано)','✅');
+  // Clear input after set
+  const inp=document.getElementById('adminPriceInput_'+sym);
+  if(inp) inp.value='';
+}
+function adminSaveAddresses(){
+  ['BTC','ETH','USDT_TRC20','USDT_ERC20','SOL','TRX','LTC','XMR'].forEach(sym=>{
+    const inp=document.getElementById('wadmin_'+sym);
+    if(inp&&inp.value.trim()) DEP_ADDRESSES[sym]=inp.value.trim();
+  });
+  adminLog('Кошельки обновлены');
+  showToast('Адреса сохранены','✅');
+}
+function adminSaveSiteSettings(){
+  const name=document.getElementById('adminSiteName')?.value;
+  if(name) document.title=name+' — Криптобиржа';
+  adminLog('Настройки сайта сохранены');
+  showToast('Настройки сохранены','✅');
+}
+function adminExportUsers(){
+  const data=JSON.stringify(getUsers(),null,2);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='kriptex_users.json'; a.click();
+  adminLog('Экспорт пользователей');
+}
+</script>
+
+<!-- WITHDRAW MODAL -->
+<div id="withdrawModal" style="display:none;position:fixed;inset:0;z-index:9980;background:rgba(3,5,15,0.92);backdrop-filter:blur(12px);align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:32px 30px;width:480px;max-width:95vw;position:relative;">
+    <button onclick="closeWithdrawModal()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">✕</button>
+    <div style="font-size:18px;font-weight:600;margin-bottom:6px;">🏧 Вывод средств</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:22px;">Выведите криптовалюту на внешний кошелёк</div>
+
+    <div class="form-row">
+      <div class="form-label">Монета для вывода</div>
+      <select class="form-input" id="wdCoin" onchange="updateWithdrawInfo()" style="cursor:pointer;font-family:'DM Sans',sans-serif;">
+        <option value="BTC">Bitcoin (BTC)</option>
+        <option value="ETH">Ethereum (ETH)</option>
+        <option value="USDT_TRC20">USDT TRC-20 (Tron)</option>
+        <option value="USDT_ERC20">USDT ERC-20 (Ethereum)</option>
+        <option value="SOL">Solana (SOL)</option>
+        <option value="TRX">TRON (TRX)</option>
+        <option value="LTC">Litecoin (LTC)</option>
+        <option value="XMR">Monero (XMR)</option>
+        <option value="BNB">BNB (BSC)</option>
+        <option value="XRP">XRP (Ripple)</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">Сеть</div>
+      <div id="wdNetwork" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:10px 12px;font-size:13px;color:var(--text2);font-family:'Space Mono',monospace;">Bitcoin Network (BTC)</div>
+    </div>
+
+    <div class="form-row">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div class="form-label" style="margin-bottom:0;">Адрес получателя</div>
+      </div>
+      <input class="form-input" type="text" id="wdAddress" placeholder="Вставьте адрес кошелька..." style="font-family:'Space Mono',monospace;font-size:12px;">
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">⚠ Проверьте адрес дважды. Транзакции необратимы.</div>
+    </div>
+
+    <div class="form-row">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div class="form-label" style="margin-bottom:0;">Сумма (USDT)</div>
+        <div style="font-size:12px;color:var(--text2);">Доступно: <span id="wdAvail" style="font-family:'Space Mono',monospace;color:var(--text);">0.00 USDT</span></div>
+      </div>
+      <div style="position:relative;">
+        <input class="form-input" type="number" id="wdAmount" placeholder="0.00" oninput="calcWdReceive()" style="padding-right:70px;">
+        <button onclick="wdSetMax()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--accent3);border:1px solid rgba(91,110,245,.3);border-radius:6px;color:var(--accent2);font-size:11px;padding:3px 9px;cursor:pointer;font-family:'DM Sans',sans-serif;">MAX</button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;"><span style="color:var(--text2);">Комиссия сети</span><span id="wdFee" style="font-family:'Space Mono',monospace;">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;"><span style="color:var(--text2);">Минимальная сумма</span><span id="wdMin" style="font-family:'Space Mono',monospace;">—</span></div>
+      <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;font-size:14px;font-weight:600;">
+        <span style="color:var(--text2);">Получите</span>
+        <span id="wdReceive" style="font-family:'Space Mono',monospace;color:var(--green);">—</span>
+      </div>
+    </div>
+
+    <button onclick="submitWithdraw()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:var(--radius2);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">
+      🏧 Вывести средства
+    </button>
+  </div>
+</div>
+
+</body>
+</html>
